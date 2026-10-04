@@ -1,0 +1,37 @@
+id,username,email,full_name,role,is_active,auto_notify,created_at
+665bce74-4bdc-4164-8bb1-cc4246de2400,admin,admin@voiceguard.example,ผู้ดูแลระบบ,admin,true,true,2026-03-02T00:00:00+07:00
+1c9b4737-176c-445e-859d-330a859b0f5e,ktb.officer1,officer1@ktb.example,เจ้าหน้าที่ KTB #1,bank,true,true,2026-03-22T16:00:00+07:00
+61345fcc-db36-431c-b4cb-70b3963078a8,ktb.officer2,officer2@ktb.example,เจ้าหน้าที่ KTB #2,bank,true,false,2026-06-15T14:00:00+07:00
+461e2ef5-600f-436b-8b20-ff6b5e1c1561,scb.officer1,officer1@scb.example,เจ้าหน้าที่ SCB #1,bank,true,false,2026-05-16T14:00:00+07:00
+fcd40acc-4f8f-45c8-82df-e9d0f8206796,scb.officer2,officer2@scb.example,เจ้าหน้าที่ SCB #2,bank,true,true,2026-04-16T10:00:00+07:00
+2c00434b-be5e-45ee-8122-ed4c038e59ae,kbank.officer1,officer1@kbank.example,เจ้าหน้าที่ KBANK #1,bank,true,true,2026-06-15T11:00:00+07:00
+4227322f-3efc-4249-9c82-bbd652717878,kbank.officer2,officer2@kbank.example,เจ้าหน้าที่ KBANK #2,bank,true,true,2026-05-31T17:00:00+07:00
+d2c29091-0e3c-43d4-916f-76666e797354,kbank.officer3,officer3@kbank.example,เจ้าหน้าที่ KBANK #3,bank,true,true,2026-08-09T08:00:00+07:00
+c337fe45-7f56-472a-8155-a61796ad3a76,kbank.officer4,officer4@kbank.example,เจ้าหน้าที่ KBANK #4,bank,true,false,2026-08-09T10:00:00+07:00
+ec2e17a2-948e-44b3-915f-caa14df50aa9,bbl.officer1,officer1@bbl.example,เจ้าหน้าที่ BBL #1,bank,true,true,2026-03-12T17:00:00+07:00
+46d4a03e-c262-49ec-8695-987a04d7dc4b,bbl.officer2,officer2@bbl.example,เจ้าหน้าที่ BBL #2,bank,true,false,2026-05-01T10:00:00+07:00
+73832518-b9b2-4f5a-bff7-cd820a5da9c8,bbl.officer3,officer3@bbl.example,เจ้าหน้าที่ BBL #3,bank,true,true,2026-04-01T13:00:00+07:00
+f1eb7eeb-a8ef-4cb0-a886-09d74d3af598,bbl.officer4,officer4@bbl.example,เจ้าหน้าที่ BBL #4,bank,true,true,2026-05-01T13:00:00+07:00
+9d3a744a-0add-4abc-9dee-e537ac062393,gsb.officer1,officer1@gsb.example,เจ้าหน้าที่ GSB #1,bank,true,true,2026-07-20T17:00:00+07:00
+506eaccd-4997-418d-8a64-a67ed9a58eaa,gsb.officer2,officer2@gsb.example,เจ้าหน้าที่ GSB #2,bank,true,false,2026-05-31T10:00:00+07:00
+a12b0378-6739-4162-9eba-0b93ccfdfff0,gsb.officer3,officer3@gsb.example,เจ้าหน้าที่ GSB #3,bank,true,true,2026-06-30T17:00:00+07:00
+1427b036-c60b-4c81-a3c6-d573dda80136,ais.officer1,officer1@ais.example,เจ้าหน้าที่ AIS #1,telco,true,true,2026-06-15T12:00:00+07:00
+52e73b62-4559-490f-bc2e-7ada5e1bb367,ais.officer2,officer2@ais.example,เจ้าหน้าที่ AIS #2,telco,true,true,2026-06-15T14:00:00+07:00
+edb26a70-31be-4abe-8303-15f94d51175b,true.officer1,officer1@true.example,เจ้าหน้าที่ TRUE #1,telco,true,true,2026-04-01T08:00:00+07:00
+ba952af1-6fd5-49fe-ba55-bdc465f95ca2,true.officer2,officer2@true.example,เจ้าหน้าที่ TRUE #2,telco,true,true,2026-05-01T09:00:00+07:00
+6ac69667-8033-4d4c-8a2c-fb6006a2c00e,true.officer3,officer3@true.example,เจ้าหน้าที่ TRUE #3,telco,true,true,2026-03-12T16:00:00+07:00
+028dcdfd-b509-4967-81ff-593ef33bb7ae,true.officer4,officer4@true.example,เจ้าหน้าที่ TRUE #4,telco,true,true,2026-05-16T15:00:00+07:00
+b405bb76-c190-4857-97dd-8ee547b0c179,nt.officer1,officer1@nt.example,เจ้าหน้าที่ NT #1,telco,true,true,2026-06-15T14:00:00+07:00
+88be6602-74af-4f89-b7fa-596e620aa8e4,nt.officer2,officer2@nt.example,เจ้าหน้าที่ NT #2,telco,true,true,2026-04-16T16:00:00+07:00
+52dd34ca-96f4-4b5c-b960-b9886b7f2605,nt.officer3,officer3@nt.example,เจ้าหน้าที่ NT #3,telco,true,false,2026-07-20T15:00:00+07:00
+10d05c09-bdb2-4253-8e44-856ad5336f34,ccib.officer1,officer1@ccib.example,เจ้าหน้าที่ CCIB #1,gov,true,true,2026-03-12T17:00:00+07:00
+49ee8f81-45d9-4cdc-83e5-abf8f1539d56,ccib.officer2,officer2@ccib.example,เจ้าหน้าที่ CCIB #2,gov,true,false,2026-05-31T15:00:00+07:00
+66637ead-7b55-4701-918c-347f1ff9573c,dsi.officer1,officer1@dsi.example,เจ้าหน้าที่ DSI #1,gov,true,false,2026-08-09T11:00:00+07:00
+3d6b328b-442b-40b7-8f09-18653f0b20a1,dsi.officer2,officer2@dsi.example,เจ้าหน้าที่ DSI #2,gov,true,true,2026-06-30T15:00:00+07:00
+4e963959-ad07-4420-808c-448702cb5eec,dsi.officer3,officer3@dsi.example,เจ้าหน้าที่ DSI #3,gov,false,true,2026-08-09T14:00:00+07:00
+7fd4dcb0-dc6b-4e20-86e0-79dc05bf63ce,depa.officer1,officer1@depa.example,เจ้าหน้าที่ DEPA #1,gov,true,true,2026-03-12T11:00:00+07:00
+f07af7a6-e284-4594-bf88-9240894b8c96,depa.officer2,officer2@depa.example,เจ้าหน้าที่ DEPA #2,gov,true,false,2026-04-16T12:00:00+07:00
+1b920a71-baaf-4adc-94e8-cd83874a8d54,depa.officer3,officer3@depa.example,เจ้าหน้าที่ DEPA #3,gov,true,true,2026-04-16T09:00:00+07:00
+83d2e570-56ce-4981-937c-fd58fd390509,nbtc.officer1,officer1@nbtc.example,เจ้าหน้าที่ NBTC #1,gov,true,false,2026-04-01T08:00:00+07:00
+385d7299-b7a7-4793-a42a-5185f3adf474,nbtc.officer2,officer2@nbtc.example,เจ้าหน้าที่ NBTC #2,gov,true,true,2026-06-30T09:00:00+07:00
+1b18c38d-637d-4ecd-a2a1-77ed14d655bb,nbtc.officer3,officer3@nbtc.example,เจ้าหน้าที่ NBTC #3,gov,true,true,2026-05-31T12:00:00+07:00

@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VoiceGuard Threat Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: report-style long read. Each chapter = narrative column (left) + evidence (right), stacked on phones. */
+:root {
+  --navy: #0B1F4B;            /* Guard Navy — brand */
+  --signal: #1E6BFF;          /* Signal Blue — brand accent */
+  --bg: #F4F7FB;              /* Cloud White */
+  --surface: #FFFFFF;
+  --ink: #0E1726;
+  --ink-2: #44506A;
+  --muted: #7A8499;
+  --grid: #E3E8F0;
+  --axis: #C5CDDA;
+  --line: rgba(14, 23, 38, 0.10);
+  --safe: #12A389;            /* Verified Mint (stepped for contrast) */
+  --suspect: #E39612;
+  --high: #E8394F;            /* Threat Coral (stepped) */
+  --high-wash: rgba(232, 57, 79, 0.10);
+  --safe-wash: rgba(18, 163, 137, 0.12);
+  --bank: #2a78d6;
+  --telco: #eda100;
+  --gov: #4a3aa7;
+  --anon: #A9B1C1;
+  --context-bg: #0B1F4B;
+  --context-ink: #F4F7FB;
+  --context-muted: #A8B6D6;
+  --heat-0: #FBECEE; --heat-1: #F6C4CB; --heat-2: #EE8D9A; --heat-3: #E8394F; --heat-4: #A6162A;
+  --f-display: "Prompt", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans Thai", "Prompt", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #081230; --surface: #0F1B3D; --ink: #F4F7FB; --ink-2: #C3CCE0; --muted: #8C97B2;
+    --grid: #1C2A52; --axis: #2B3B66; --line: rgba(255,255,255,0.10);
+    --safe: #0FA287; --suspect: #B87A10; --high: #F2475C;
+    --high-wash: rgba(242, 71, 92, 0.16); --safe-wash: rgba(15, 162, 135, 0.18);
+    --bank: #3987e5; --telco: #c98500; --gov: #9085e9; --anon: #56627F;
+    --context-bg: #13265C; --context-ink: #F4F7FB; --context-muted: #A8B6D6;
+    --heat-0: #1A2347; --heat-1: #4A2340; --heat-2: #8A2A45; --heat-3: #D23A52; --heat-4: #FF7A8A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #081230; --surface: #0F1B3D; --ink: #F4F7FB; --ink-2: #C3CCE0; --muted: #8C97B2;
+  --grid: #1C2A52; --axis: #2B3B66; --line: rgba(255,255,255,0.10);
+  --safe: #0FA287; --suspect: #B87A10; --high: #F2475C;
+  --high-wash: rgba(242, 71, 92, 0.16); --safe-wash: rgba(15, 162, 135, 0.18);
+  --bank: #3987e5; --telco: #c98500; --gov: #9085e9; --anon: #56627F;
+  --context-bg: #13265C; --context-ink: #F4F7FB; --context-muted: #A8B6D6;
+  --heat-0: #1A2347; --heat-1: #4A2340; --heat-2: #8A2A45; --heat-3: #D23A52; --heat-4: #FF7A8A;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.25; }
+p { margin: 0; }
+a { color: var(--signal); }
+.mono, .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+/* ---------- masthead ---------- */
+.mast { background: var(--navy); color: #F4F7FB; padding-block: 28px 30px; }
+.mast .wrap { display: grid; gap: 18px; }
+.brandline { display: flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #A8B6D6; flex-wrap: wrap; }
+.brandline svg { flex: none; }
+.brandline .sep { opacity: .4; }
+.mast h1 { font-size: clamp(28px, 4.4vw, 46px); font-weight: 700; max-width: 22ch; }
+.mast h1 em { font-style: normal; color: #FF7A8A; }
+.mast .lede { color: #C9D3EA; max-width: 62ch; font-size: 16px; }
+.stamp { display: inline-flex; gap: 8px; align-items: center; font-family: var(--f-mono); font-size: 12px; color: #F4F7FB; border: 1px solid rgba(255,255,255,.25); border-radius: 4px; padding: 4px 10px; width: fit-content; }
+.stamp b { color: #FFC24D; font-weight: 600; }
+
+/* ---------- context band (real public data) ---------- */
+.context { background: var(--context-bg); color: var(--context-ink); border-top: 1px solid rgba(255,255,255,.08); padding-block: 22px 26px; }
+.context .label { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--context-muted); margin-bottom: 14px; }
+.ctx-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+.ctx { padding: 4px 18px 4px 0; border-right: 1px solid rgba(255,255,255,.12); margin-right: 18px; min-width: 0; }
+.ctx:last-child { border-right: 0; margin-right: 0; }
+.ctx .v { font-family: var(--f-display); font-size: clamp(24px, 3vw, 32px); font-weight: 600; line-height: 1.1; }
+.ctx .v small { font-size: .55em; font-weight: 500; color: var(--context-muted); margin-left: 4px; }
+.ctx .d { font-size: 13px; color: #C9D3EA; margin-top: 4px; }
+.ctx .s { font-size: 11.5px; color: var(--context-muted); margin-top: 6px; }
+.ctx .s a { color: var(--context-muted); }
+
+/* ---------- sticky control bar ---------- */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+.bar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; flex-wrap: wrap; }
+.chap-nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+.chap-nav a { font-size: 13px; color: var(--ink-2); text-decoration: none; padding: 4px 10px; border-radius: 4px; white-space: nowrap; }
+.chap-nav a:hover { background: var(--line); color: var(--ink); }
+.seg { display: inline-flex; border: 1px solid var(--axis); border-radius: 6px; overflow: hidden; flex: none; }
+.seg button { font: 500 13px var(--f-body); background: transparent; color: var(--ink-2); border: 0; padding: 5px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--axis); }
+.seg button[aria-pressed="true"] { background: var(--navy); color: #fff; }
+:root[data-theme="dark"] .seg button[aria-pressed="true"] { background: var(--signal); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-pressed="true"] { background: var(--signal); } }
+.ctl-label { font-size: 12px; color: var(--muted); margin-right: 8px; }
+
+/* ---------- KPI row ---------- */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding-block: 24px 8px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; min-width: 0; }
+.kpi .k { font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
+.kpi .k i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; flex: none; }
+.kpi .v { font-family: var(--f-display); font-size: 30px; font-weight: 600; line-height: 1.2; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.kpi .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.delta { font-family: var(--f-mono); font-size: 12px; padding: 1px 6px; border-radius: 3px; margin-right: 4px; }
+.delta.bad { color: var(--high); background: var(--high-wash); }
+.delta.good { color: var(--safe); background: var(--safe-wash); }
+.delta.neu { color: var(--ink-2); background: var(--line); }
+
+/* ---------- chapters ---------- */
+.chapter { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 28px 40px; padding-block: 44px; border-top: 1px solid var(--line); }
+.chapter:first-of-type { border-top: 0; }
+.story { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.story .no { font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: .06em; }
+.story h2 { font-size: clamp(22px, 2.6vw, 28px); font-weight: 600; }
+.story p { color: var(--ink-2); max-width: 46ch; }
+.story .callout { border-left: 3px solid var(--high); padding: 2px 0 2px 12px; color: var(--ink); font-weight: 500; }
+.story .callout.good { border-left-color: var(--safe); }
+.story .so { font-size: 13.5px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; color: var(--ink-2); }
+.story .so b { color: var(--ink); font-family: var(--f-display); font-weight: 600; }
+.evidence { display: grid; gap: 16px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 16px 12px; min-width: 0; }
+.panel h3 { font-size: 15px; font-weight: 600; }
+.panel .cap { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.chart { width: 100%; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { font-family: var(--f-body); fill: var(--muted); font-size: 11px; }
+.chart text.lab { fill: var(--ink-2); font-size: 12px; }
+.chart text.val { fill: var(--ink); font-family: var(--f-mono); font-size: 11.5px; font-weight: 500; }
+.chart text.strong { fill: var(--ink); font-weight: 600; }
+.chart .gridl { stroke: var(--grid); stroke-width: 1; }
+.chart .base { stroke: var(--axis); stroke-width: 1; }
+.chart .hit { fill: transparent; cursor: crosshair; }
+
+/* table */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--axis); white-space: nowrap; }
+td { padding: 7px 8px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+td.r, th.r { text-align: right; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--high-wash); color: var(--high); white-space: nowrap; }
+.pill.vc::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.minibar { height: 6px; border-radius: 3px; background: var(--high); opacity: .85; }
+
+/* impact */
+.impact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.big { font-family: var(--f-display); font-size: clamp(34px, 5vw, 52px); font-weight: 700; line-height: 1.05; color: var(--safe); font-variant-numeric: tabular-nums; }
+.formula { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-2); background: var(--bg); border-radius: 6px; padding: 10px 12px; line-height: 1.7; overflow-x: auto; }
+input[type=range] { width: 100%; accent-color: var(--signal); }
+.slider-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-2); }
+
+/* actions */
+.actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.act { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.act .who { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; color: var(--ink-2); }
+.act .who i { width: 10px; height: 10px; border-radius: 2px; }
+.act h3 { font-size: 16px; font-weight: 600; }
+.act ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; display: grid; gap: 4px; }
+
+/* footer */
+.foot { border-top: 1px solid var(--line); padding-block: 28px 48px; color: var(--ink-2); font-size: 13px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; }
+.foot h3 { font-size: 14px; color: var(--ink); margin-bottom: 8px; }
+.foot ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+.foot code { font-family: var(--f-mono); font-size: 12px; background: var(--surface); border: 1px solid var(--line); padding: 0 4px; border-radius: 3px; }
+
+/* tooltip */
+.tip { position: fixed; z-index: 50; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12.5px; line-height: 1.5; padding: 8px 10px; border-radius: 6px; max-width: 260px; box-shadow: 0 6px 18px rgba(0,0,0,.18); opacity: 0; transition: opacity .08s; }
+.tip b { font-family: var(--f-display); font-weight: 600; }
+.tip .row { display: flex; justify-content: space-between; gap: 14px; font-family: var(--f-mono); font-size: 12px; }
+.tip .row span:first-child { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-body); }
+.tip i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+
+details.data { margin-top: 4px; font-size: 12.5px; color: var(--muted); }
+details.data summary { cursor: pointer; }
+details.data[open] summary { margin-bottom: 6px; }
+
+@media (max-width: 900px) {
+  .chapter { grid-template-columns: minmax(0, 1fr); padding-block: 32px; }
+  .story p { max-width: none; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ctx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 18px; }
+  .ctx:nth-child(2) { border-right: 0; margin-right: 0; }
+  .actions { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .two, .impact, .foot { grid-template-columns: minmax(0, 1fr); }
+  .chap-nav { display: none; }
+  .kpi .v { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <div class="brandline">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z" fill="#1E6BFF"/><path d="M8 12h1.2M10.6 9.5v5M13 8v8M15.4 10v4" stroke="#19D3B0" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span>VoiceGuard AI</span><span class="sep">/</span><span>Fraud Intelligence</span><span class="sep">/</span><span>ไตรมาส 2–3 ปี 2026</span>
+    </div>
+    <h1>มิจฉาชีพโทรมาบ่อยขึ้น และสายอันตรายครึ่งหนึ่งที่เราตรวจเสียงคือ<em>เสียง AI</em></h1>
+    <p class="lede">รายงานสำหรับพันธมิตรธนาคาร ผู้ให้บริการโทรคมนาคม และหน่วยงานรัฐ สรุปสิ่งที่ระบบ VoiceGuard ตรวจพบตลอด 6 เดือน (1 เม.ย. – 30 ก.ย. 2026) และสิ่งที่แต่ละฝ่ายควรทำต่อ</p>
+    <span class="stamp">ข้อมูลจำลอง <b>SIMULATED</b> ตามโครงสร้างฐานข้อมูลจริงของระบบ · ตัวเลขบริบทด้านล่างเป็นสถิติจริง</span>
+  </div>
+</header>
+
+<section class="context" aria-label="บริบทจากสถิติจริงของประเทศไทย">
+  <div class="wrap">
+    <div class="label">บริบท: ภัยมิจฉาชีพในประเทศไทย (สถิติจริงจากแหล่งสาธารณะ)</div>
+    <div class="ctx-grid">
+      <div class="ctx"><div class="v">115.3<small>พันล้านบาท</small></div><div class="d">ความเสียหายจากมิจฉาชีพทั้งปี 2025</div><div class="s"><a href="https://www.thaiexaminer.com/thai-news-foreigners/2026/03/19/scam-threat-again-on-the-rise-in-thailand-with-losses-of-70-million-baht-a-day-being-reported-by-police/" target="_blank" rel="noopener">Thai Examiner, มี.ค. 2026</a></div></div>
+      <div class="ctx"><div class="v">39<small>ล้านสาย</small></div><div class="d">สายโทรหลอกลวงในปี 2025 (SMS อีก 134 ล้านข้อความ)</div><div class="s"><a href="https://www.thaiexaminer.com/thai-news-foreigners/2026/03/19/scam-threat-again-on-the-rise-in-thailand-with-losses-of-70-million-baht-a-day-being-reported-by-police/" target="_blank" rel="noopener">Thai Examiner, มี.ค. 2026</a></div></div>
+      <div class="ctx"><div class="v">960<small>คดี/วัน</small></div><div class="d">แจ้งความออนไลน์เฉลี่ยต่อวัน เม.ย. 2568 เสียหาย 55 ล้านบาท/วัน</div><div class="s"><a href="https://www.thaipbs.or.th/verify/article/content/2683" target="_blank" rel="noopener">Thai PBS Verify อ้างอิง thaipoliceonline</a></div></div>
+      <div class="ctx"><div class="v">12,956<small>บาท</small></div><div class="d">ความเสียหายเฉลี่ยต่อเหยื่อ 1 ราย (ใช้คำนวณในบทที่ 6)</div><div class="s"><a href="https://www.nationthailand.com/news/general/40058129" target="_blank" rel="noopener">GASA ผ่าน Nation Thailand</a></div></div>
+    </div>
+  </div>
+</section>
+
+<nav class="bar" aria-label="ส่วนควบคุม">
+  <div class="wrap">
+    <div class="chap-nav">
+      <a href="#ch1">1 ปริมาณ</a><a href="#ch2">2 เสียง AI</a><a href="#ch3">3 เวลาเสี่ยง</a><a href="#ch4">4 เบอร์ซ้ำ</a><a href="#ch5">5 พันธมิตร</a><a href="#ch6">6 มูลค่า</a><a href="#ch7">7 สิ่งที่ต้องทำ</a>
+    </div>
+    <div><span class="ctl-label">ช่วงเวลา</span><div class="seg" role="group" aria-label="ช่วงเวลา" id="range">
+      <button type="button" id="r-all" data-range="all" aria-pressed="true">6 เดือน</button>
+      <button type="button" id="r-90" data-range="90" aria-pressed="false">90 วัน</button>
+      <button type="button" id="r-30" data-range="30" aria-pressed="false">30 วัน</button>
+    </div></div>
+  </div>
+</nav>
+
+<main class="wrap">
+  <div class="kpis" id="kpis" aria-live="polite"></div>
+
+  <!-- 1 -->
+  <section class="chapter" id="ch1">
+    <div class="story">
+      <div class="no">บทที่ 1 / 7 · ปริมาณ</div>
+      <h2>คนตรวจสายมากขึ้น และสายที่ตรวจก็อันตรายขึ้น</h2>
+      <p id="t1a"></p>
+      <p class="callout" id="t1b"></p>
+      <p>แถบสีเทาคือช่วงที่มีคลื่นการหลอกเป็นกลุ่ม: <b>“พัสดุค้างส่ง”</b> กลางเดือนกรกฎาคม และ <b>“เสียงโคลนคนรู้จัก”</b> ปลายสิงหาคมถึงต้นกันยายน</p>
+    </div>
+    <div class="evidence">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>การตรวจสายรายวัน แยกตามระดับความเสี่ยง</h3><div class="cap">ค่าเฉลี่ยเคลื่อนที่ 7 วัน · ชี้บนกราฟเพื่อดูรายวัน</div></div>
+          <div class="legend"><span><i style="background:var(--safe)"></i>ปลอดภัย</span><span><i style="background:var(--suspect)"></i>น่าสงสัย</span><span><i style="background:var(--high)"></i>เสี่ยงสูง</span></div>
+        </div>
+        <div class="chart" id="c-daily"></div>
+        <details class="data"><summary>ดูเป็นตาราง (รายเดือน)</summary><div class="tbl-wrap" id="tb-monthly"></div></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="chapter" id="ch2">
+    <div class="story">
+      <div class="no">บทที่ 2 / 7 · เสียงสังเคราะห์</div>
+      <h2>เสียงที่คุณได้ยิน อาจไม่ใช่คนจริง</h2>
+      <p id="t2a"></p>
+      <p class="callout" id="t2b"></p>
+      <p class="so"><b>หมายความว่า</b> การตรวจเฉพาะ “เบอร์” ไม่พออีกต่อไป เบอร์ใหม่ที่ยังไม่มีใครแจ้งจะผ่านไปได้ ต้องวิเคราะห์ “เสียง” ควบคู่เสมอ</p>
+    </div>
+    <div class="evidence">
+      <div class="two">
+        <div class="panel">
+          <h3>สัดส่วนเสียง AI ในสายเสี่ยงสูง</h3>
+          <div class="cap">เฉพาะสายที่ส่งไฟล์เสียงให้วิเคราะห์</div>
+          <div class="chart" id="c-syn"></div>
+        </div>
+        <div class="panel">
+          <h3>อันดับรูปแบบการหลอก เม.ย. → ก.ย.</h3>
+          <div class="cap">นับจากการแจ้งเบาะแส (reports × scam_categories)</div>
+          <div class="chart" id="c-slope"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="chapter" id="ch3">
+    <div class="story">
+      <div class="no">บทที่ 3 / 7 · เวลาเสี่ยง</div>
+      <h2>มิจฉาชีพทำงานตามเวลาราชการ</h2>
+      <p id="t3a"></p>
+      <p class="callout" id="t3b"></p>
+      <p class="so"><b>หมายความว่า</b> ช่วงเวลานี้คือเวลาที่ผู้สูงอายุอยู่บ้านคนเดียวและลูกหลานอยู่ที่ทำงาน ควรเพิ่มการแจ้งเตือนถึงผู้ติดต่อฉุกเฉินในช่วงดังกล่าว</p>
+    </div>
+    <div class="evidence">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>สายเสี่ยงสูง แยกตามวันและชั่วโมง</h3><div class="cap">รวม 6 เดือน · สีเข้ม = สายมาก</div></div>
+          <div class="legend" id="heat-legend"></div>
+        </div>
+        <div class="chart" id="c-heat"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="chapter" id="ch4">
+    <div class="story">
+      <div class="no">บทที่ 4 / 7 · เบอร์ซ้ำ</div>
+      <h2>เบอร์เพียง 10% ก่อเหตุกว่าครึ่ง</h2>
+      <p id="t4a"></p>
+      <p class="callout good" id="t4b"></p>
+      <p id="t4c"></p>
+    </div>
+    <div class="evidence">
+      <div class="two">
+        <div class="panel">
+          <h3>สัดส่วนสายเสี่ยงสูงสะสม</h3>
+          <div class="cap">เรียงเบอร์จากก่อเหตุมากไปน้อย</div>
+          <div class="chart" id="c-pareto"></div>
+        </div>
+        <div class="panel">
+          <h3>ประเภทเบอร์ที่ใช้โทร</h3>
+          <div class="cap">จำนวนสายเสี่ยงสูงตามเลขขึ้นต้น</div>
+          <div class="chart" id="c-prefix"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h3>10 เบอร์ที่ก่อเหตุมากที่สุด</h3><div class="cap">ปิดเลขกลางตามแนวปฏิบัติ PDPA</div></div></div>
+        <div class="tbl-wrap" id="tb-top"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="chapter" id="ch5">
+    <div class="story">
+      <div class="no">บทที่ 5 / 7 · เครือข่ายพันธมิตร</div>
+      <h2>ยิ่งมีคนช่วยแจ้ง ยิ่งปิดเบอร์ได้เร็ว</h2>
+      <p id="t5a"></p>
+      <p class="callout good" id="t5b"></p>
+      <p class="so"><b>หมายความว่า</b> ทุกชั่วโมงที่เร็วขึ้นคือสายที่ไม่ต้องหลุดไปถึงเหยื่อ การแจ้งเบาะแสจากพันธมิตรคือสินทรัพย์ที่สำคัญที่สุดของระบบ</p>
+    </div>
+    <div class="evidence">
+      <div class="two">
+        <div class="panel">
+          <h3>เวลาจากสายแรกถึงขึ้น Blacklist</h3>
+          <div class="cap">ค่ามัธยฐาน (ชั่วโมง) ตามเดือนที่เห็นเบอร์ครั้งแรก</div>
+          <div class="chart" id="c-lag"></div>
+        </div>
+        <div class="panel">
+          <h3>การแจ้งเบาะแสรายเดือน</h3>
+          <div class="legend" style="margin-top:4px"><span><i style="background:var(--bank)"></i>ธนาคาร</span><span><i style="background:var(--telco)"></i>Telco</span><span><i style="background:var(--gov)"></i>หน่วยงานรัฐ</span><span><i style="background:var(--anon)"></i>ไม่ระบุ</span></div>
+          <div class="chart" id="c-partner"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="chapter" id="ch6">
+    <div class="story">
+      <div class="no">บทที่ 6 / 7 · มูลค่า</div>
+      <h2>เงินที่ไม่ต้องสูญเสีย</h2>
+      <p>เราไม่รู้แน่ว่าสายเสี่ยงสูงกี่สายจะทำให้มีคนโอนเงินจริง จึงให้ผู้อ่านปรับสมมติฐานเองได้ ค่าเริ่มต้นคือ 2% คูณกับค่าเสียหายเฉลี่ยต่อเหยื่อจากรายงาน GASA</p>
+      <p class="so"><b>อ่านอย่างระมัดระวัง</b> ตัวเลขนี้เป็นการประมาณการเพื่อเล่าเรื่อง ไม่ใช่ความเสียหายที่ป้องกันได้จริง ต้องเก็บข้อมูลผลลัพธ์หลังเตือน (outcome) ก่อนจึงจะวัดได้</p>
+    </div>
+    <div class="evidence">
+      <div class="impact">
+        <div class="panel" style="display:grid;gap:12px;align-content:start">
+          <div class="cap" id="imp-range"></div>
+          <div class="big" id="imp-big"></div>
+          <div style="color:var(--ink-2);font-size:14px" id="imp-sub"></div>
+          <div>
+            <div class="slider-row"><label for="conv">สมมติ: สายเสี่ยงสูงที่จะกลายเป็นเหยื่อ</label><b class="mono" id="conv-v"></b></div>
+            <input type="range" id="conv" min="0.5" max="5" step="0.5" value="2">
+          </div>
+          <div class="formula" id="imp-formula"></div>
+        </div>
+        <div class="panel">
+          <h3>มูลค่าประมาณการรายเดือน</h3>
+          <div class="cap">ล้านบาท ตามสมมติฐานที่เลือก</div>
+          <div class="chart" id="c-impact"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="chapter" id="ch7" style="grid-template-columns:minmax(0,1fr)">
+    <div class="story">
+      <div class="no">บทที่ 7 / 7 · สิ่งที่ต้องทำ</div>
+      <h2>ข้อเสนอสำหรับไตรมาสถัดไป</h2>
+    </div>
+    <div class="actions">
+      <div class="act"><div class="who"><i style="background:var(--bank)"></i>ธนาคาร</div><h3>หน่วงการโอนเมื่อมีสายเสี่ยงสูงก่อนหน้า</h3>
+        <ul><li>เชื่อม API <span class="mono">/detect/number</span> กับระบบโอนเงิน หากลูกค้าเพิ่งรับสายเสี่ยงสูงใน 30 นาที ให้ยืนยันอีกชั้น</li><li>ให้ความสำคัญกับลูกค้าสูงอายุช่วง 09–16 น. วันทำการ</li></ul></div>
+      <div class="act"><div class="who"><i style="background:var(--telco)"></i>Telco</div><h3>ระงับเบอร์กลุ่มหัวแถวให้เร็วขึ้น</h3>
+        <ul><li>เบอร์ 10% แรกก่อเหตุราวครึ่งหนึ่ง ระงับกลุ่มนี้ได้ผลคุ้มที่สุด</li><li>ติดป้าย “เบอร์บ้านปลอม” สำหรับสายขึ้นต้น 02 ที่แสดงชื่อองค์กร</li></ul></div>
+      <div class="act"><div class="who"><i style="background:var(--gov)"></i>หน่วยงานรัฐ</div><h3>สื่อสารเรื่องเสียงโคลนเป็นเรื่องหลัก</h3>
+        <ul><li>รูปแบบ “เสียงคนรู้จัก” ขึ้นเป็นอันดับ 1 แล้ว ควรเปลี่ยนข้อความรณรงค์จาก “ตำรวจปลอม” เป็น “โทรกลับเบอร์เดิมก่อนโอน”</li><li>เก็บข้อมูลผลลัพธ์หลังเตือน เพื่อวัดมูลค่าที่ป้องกันได้จริง</li></ul></div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div>
+      <h3>ข้อมูลที่ใช้</h3>
+      <p style="margin-bottom:8px">ข้อมูลในบทที่ 1–6 เป็นข้อมูลจำลอง (seed คงที่ รันซ้ำได้ผลเดิม) ที่สร้างตามโครงสร้างตารางจริงของ VoiceGuard ทุกคอลัมน์ จึงโหลดเข้า PostgreSQL ของระบบได้ทันที</p>
+      <ul>
+        <li><code>call_logs</code> <span id="f-calls"></span> แถว · <code>blacklist_numbers</code> <span id="f-bl"></span> · <code>reports</code> <span id="f-rep"></span></li>
+        <li><code>report_categories</code> (M-N) · <code>scam_categories</code> 8 · <code>users</code> <span id="f-users"></span> บัญชีพันธมิตร</li>
+        <li>ไฟล์: <code>dashboard/data/raw/*.csv</code>, ตารางสรุป <code>dashboard/data/aggregated/*.csv</code>, SQL ที่ให้ผลเดียวกัน <code>dashboard/sql/queries.sql</code></li>
+      </ul>
+    </div>
+    <div>
+      <h3>แหล่งอ้างอิงสถิติจริง</h3>
+      <ul>
+        <li><a href="https://www.thaiexaminer.com/thai-news-foreigners/2026/03/19/scam-threat-again-on-the-rise-in-thailand-with-losses-of-70-million-baht-a-day-being-reported-by-police/" target="_blank" rel="noopener">Thai Examiner (19 มี.ค. 2026): ความเสียหาย 2025 และจำนวนสาย/SMS</a></li>
+        <li><a href="https://www.thaipbs.or.th/verify/article/content/2683" target="_blank" rel="noopener">Thai PBS Verify: สถิติ thaipoliceonline เม.ย. 2568</a></li>
+        <li><a href="https://www.nationthailand.com/news/general/40058129" target="_blank" rel="noopener">Nation Thailand: รายงาน GASA ค่าเสียหายเฉลี่ยต่อคน</a></li>
+      </ul>
+      <p style="margin-top:10px">VoiceGuard AI · Hear the truth. Stay protected. · โครงงาน BUU</p>
+    </div>
+  </footer>
+</main>
+<div class="tip" id="tip" role="status"></div>
+
+<script>
+const DATA = {"summary":{"period":["2026-04-01","2026-09-30"],"total_checks":68124,"high_risk":15879,"synthetic":2620,"blacklist_numbers":1654,"reports":4019,"partners":35,"top10pct_share":51.4,"unique_scam_numbers":1726,"avg_loss_thb":12956,"default_conversion":0.02},"daily":[{"date":"2026-04-01","total":228,"safe":152,"suspect":28,"high_risk":48,"synthetic":5,"number_check":115,"audio":67,"demo":46},{"date":"2026-04-02","total":224,"safe":161,"suspect":34,"high_risk":29,"synthetic":6,"number_check":119,"audio":69,"demo":36},{"date":"2026-04-03","total":228,"safe":150,"suspect":30,"high_risk":48,"synthetic":3,"number_check":119,"audio":64,"demo":45},{"date":"2026-04-04","total":188,"safe":143,"suspect":14,"high_risk":31,"synthetic":1,"number_check":101,"audio":51,"demo":36},{"date":"2026-04-05","total":169,"safe":141,"suspect":15,"high_risk":13,"synthetic":0,"number_check":107,"audio":39,"demo":23},{"date":"2026-04-06","total":215,"safe":135,"suspect":37,"high_risk":43,"synthetic":2,"number_check":116,"audio":71,"demo":28},{"date":"2026-04-07","total":230,"safe":156,"suspect":32,"high_risk":42,"synthetic":2,"number_check":125,"audio":68,"demo":37},{"date":"2026-04-08","total":226,"safe":154,"suspect":30,"high_risk":42,"synthetic":2,"number_check":120,"audio":66,"demo":40},{"date":"2026-04-09","total":268,"safe":182,"suspect":38,"high_risk":48,"synthetic":2,"number_check":146,"audio":82,"demo":40},{"date":"2026-04-10","total":233,"safe":145,"suspect":41,"high_risk":47,"synthetic":2,"number_check":114,"audio":75,"demo":44},{"date":"2026-04-11","total":150,"safe":120,"suspect":13,"high_risk":17,"synthetic":1,"number_check":92,"audio":40,"demo":18},{"date":"2026-04-12","total":156,"safe":123,"suspect":13,"high_risk":20,"synthetic":2,"number_check":87,"audio":40,"demo":29},{"date":"2026-04-13","total":271,"safe":194,"suspect":32,"high_risk":45,"synthetic":1,"number_check":153,"audio":88,"demo":30},{"date":"2026-04-14","total":247,"safe":173,"suspect":26,"high_risk":48,"synthetic":6,"number_check":126,"audio":76,"demo":45},{"date":"2026-04-15","total":242,"safe":163,"suspect":38,"high_risk":41,"synthetic":2,"number_check":130,"audio":68,"demo":44},{"date":"2026-04-16","total":254,"safe":183,"suspect":28,"high_risk":43,"synthetic":2,"number_check":142,"audio":71,"demo":41},{"date":"2026-04-17","total":269,"safe":179,"suspect":34,"high_risk":56,"synthetic":6,"number_check":150,"audio":84,"demo":35},{"date":"2026-04-18","total":165,"safe":133,"suspect":17,"high_risk":15,"synthetic":1,"number_check":91,"audio":45,"demo":29},{"date":"2026-04-19","total":159,"safe":130,"suspect":15,"high_risk":14,"synthetic":1,"number_check":90,"audio":45,"demo":24},{"date":"2026-04-20","total":242,"safe":169,"suspect":20,"high_risk":53,"synthetic":5,"number_check":135,"audio":71,"demo":36},{"date":"2026-04-21","total":268,"safe":167,"suspect":40,"high_risk":61,"synthetic":3,"number_check":144,"audio":80,"demo":44},{"date":"2026-04-22","total":262,"safe":183,"suspect":32,"high_risk":47,"synthetic":5,"number_check":131,"audio":91,"demo":40},{"date":"2026-04-23","total":257,"safe":165,"suspect":40,"high_risk":52,"synthetic":7,"number_check":136,"audio":83,"demo":38},{"date":"2026-04-24","total":268,"safe":182,"suspect":40,"high_risk":46,"synthetic":5,"number_check":143,"audio":95,"demo":30},{"date":"2026-04-25","total":194,"safe":146,"suspect":23,"high_risk":25,"synthetic":4,"number_check":120,"audio":46,"demo":28},{"date":"2026-04-26","total":186,"safe":149,"suspect":19,"high_risk":18,"synthetic":2,"number_check":96,"audio":71,"demo":19},{"date":"2026-04-27","total":274,"safe":186,"suspect":40,"high_risk":48,"synthetic":8,"number_check":140,"audio":89,"demo":45},{"date":"2026-04-28","total":282,"safe":190,"suspect":35,"high_risk":57,"synthetic":2,"number_check":143,"audio":89,"demo":50},{"date":"2026-04-29","total":282,"safe":190,"suspect":42,"high_risk":50,"synthetic":6,"number_check":153,"audio":93,"demo":36},{"date":"2026-04-30","total":264,"safe":169,"suspect":31,"high_risk":64,"synthetic":9,"number_check":147,"audio":84,"demo":33},{"date":"2026-05-01","total":269,"safe":180,"suspect":43,"high_risk":46,"synthetic":4,"number_check":149,"audio":86,"demo":34},{"date":"2026-05-02","total":202,"safe":144,"suspect":25,"high_risk":33,"synthetic":1,"number_check":115,"audio":61,"demo":26},{"date":"2026-05-03","total":200,"safe":158,"suspect":18,"high_risk":24,"synthetic":1,"number_check":117,"audio":59,"demo":24},{"date":"2026-05-04","total":278,"safe":179,"suspect":38,"high_risk":61,"synthetic":6,"number_check":161,"audio":75,"demo":42},{"date":"2026-05-05","total":282,"safe":185,"suspect":30,"high_risk":67,"synthetic":5,"number_check":153,"audio":96,"demo":33},{"date":"2026-05-06","total":263,"safe":164,"suspect":38,"high_risk":61,"synthetic":5,"number_check":137,"audio":88,"demo":38},{"date":"2026-05-07","total":294,"safe":197,"suspect":34,"high_risk":63,"synthetic":6,"number_check":158,"audio":95,"demo":41},{"date":"2026-05-08","total":307,"safe":205,"suspect":40,"high_risk":62,"synthetic":5,"number_check":169,"audio":103,"demo":35},{"date":"2026-05-09","total":228,"safe":179,"suspect":22,"high_risk":27,"synthetic":5,"number_check":122,"audio":77,"demo":29},{"date":"2026-05-10","total":213,"safe":158,"suspect":24,"high_risk":31,"synthetic":2,"number_check":129,"audio":56,"demo":28},{"date":"2026-05-11","total":289,"safe":193,"suspect":48,"high_risk":48,"synthetic":6,"number_check":155,"audio":98,"demo":36},{"date":"2026-05-12","total":289,"safe":187,"suspect":30,"high_risk":72,"synthetic":5,"number_check":146,"audio":105,"demo":38},{"date":"2026-05-13","total":298,"safe":191,"suspect":38,"high_risk":69,"synthetic":6,"number_check":161,"audio":92,"demo":45},{"date":"2026-05-14","total":283,"safe":192,"suspect":35,"high_risk":56,"synthetic":6,"number_check":154,"audio":99,"demo":30},{"date":"2026-05-15","total":325,"safe":207,"suspect":40,"high_risk":78,"synthetic":9,"number_check":171,"audio":114,"demo":40},{"date":"2026-05-16","total":193,"safe":156,"suspect":26,"high_risk":11,"synthetic":2,"number_check":107,"audio":55,"demo":31},{"date":"2026-05-17","total":230,"safe":188,"suspect":18,"high_risk":24,"synthetic":4,"number_check":119,"audio":85,"demo":26},{"date":"2026-05-18","total":299,"safe":186,"suspect":44,"high_risk":69,"synthetic":5,"number_check":156,"audio":102,"demo":41},{"date":"2026-05-19","total":320,"safe":209,"suspect":41,"high_risk":70,"synthetic":4,"number_check":182,"audio":97,"demo":41},{"date":"2026-05-20","total":286,"safe":179,"suspect":47,"high_risk":60,"synthetic":6,"number_check":143,"audio":93,"demo":50},{"date":"2026-05-21","total":324,"safe":205,"suspect":48,"high_risk":71,"synthetic":8,"number_check":194,"audio":91,"demo":39},{"date":"2026-05-22","total":308,"safe":186,"suspect":60,"high_risk":62,"synthetic":9,"number_check":185,"audio":82,"demo":41},{"date":"2026-05-23","total":230,"safe":178,"suspect":20,"high_risk":32,"synthetic":3,"number_check":130,"audio":79,"demo":21},{"date":"2026-05-24","total":221,"safe":172,"suspect":21,"high_risk":28,"synthetic":4,"number_check":118,"audio":80,"demo":23},{"date":"2026-05-25","total":335,"safe":217,"suspect":51,"high_risk":67,"synthetic":4,"number_check":194,"audio":101,"demo":40},{"date":"2026-05-26","total":348,"safe":213,"suspect":60,"high_risk":75,"synthetic":5,"number_check":197,"audio":109,"demo":42},{"date":"2026-05-27","total":288,"safe":173,"suspect":45,"high_risk":70,"synthetic":10,"number_check":153,"audio":92,"demo":43},{"date":"2026-05-28","total":349,"safe":231,"suspect":30,"high_risk":88,"synthetic":13,"number_check":193,"audio":111,"demo":45},{"date":"2026-05-29","total":348,"safe":220,"suspect":45,"high_risk":83,"synthetic":7,"number_check":176,"audio":123,"demo":49},{"date":"2026-05-30","total":225,"safe":175,"suspect":20,"high_risk":30,"synthetic":4,"number_check":129,"audio":59,"demo":37},{"date":"2026-05-31","total":236,"safe":180,"suspect":23,"high_risk":33,"synthetic":5,"number_check":132,"audio":79,"demo":25},{"date":"2026-06-01","total":354,"safe":230,"suspect":46,"high_risk":78,"synthetic":13,"number_check":192,"audio":116,"demo":46},{"date":"2026-06-02","total":340,"safe":220,"suspect":40,"high_risk":80,"synthetic":13,"number_check":187,"audio":114,"demo":39},{"date":"2026-06-03","total":324,"safe":203,"suspect":43,"high_risk":78,"synthetic":12,"number_check":176,"audio":107,"demo":41},{"date":"2026-06-04","total":317,"safe":191,"suspect":40,"high_risk":86,"synthetic":10,"number_check":179,"audio":106,"demo":32},{"date":"2026-06-05","total":357,"safe":239,"suspect":40,"high_risk":78,"synthetic":8,"number_check":205,"audio":122,"demo":30},{"date":"2026-06-06","total":246,"safe":194,"suspect":22,"high_risk":30,"synthetic":1,"number_check":141,"audio":77,"demo":28},{"date":"2026-06-07","total":258,"safe":207,"suspect":23,"high_risk":28,"synthetic":4,"number_check":144,"audio":84,"demo":30},{"date":"2026-06-08","total":340,"safe":221,"suspect":46,"high_risk":73,"synthetic":8,"number_check":188,"audio":121,"demo":31},{"date":"2026-06-09","total":330,"safe":216,"suspect":44,"high_risk":70,"synthetic":9,"number_check":194,"audio":102,"demo":34},{"date":"2026-06-10","total":353,"safe":228,"suspect":47,"high_risk":78,"synthetic":8,"number_check":191,"audio":120,"demo":42},{"date":"2026-06-11","total":316,"safe":216,"suspect":33,"high_risk":67,"synthetic":10,"number_check":164,"audio":110,"demo":42},{"date":"2026-06-12","total":376,"safe":229,"suspect":57,"high_risk":90,"synthetic":10,"number_check":210,"audio":118,"demo":48},{"date":"2026-06-13","total":218,"safe":165,"suspect":23,"high_risk":30,"synthetic":2,"number_check":127,"audio":64,"demo":27},{"date":"2026-06-14","total":235,"safe":188,"suspect":23,"high_risk":24,"synthetic":4,"number_check":131,"audio":85,"demo":19},{"date":"2026-06-15","total":352,"safe":232,"suspect":42,"high_risk":78,"synthetic":14,"number_check":184,"audio":125,"demo":43},{"date":"2026-06-16","total":354,"safe":225,"suspect":41,"high_risk":88,"synthetic":14,"number_check":203,"audio":103,"demo":48},{"date":"2026-06-17","total":371,"safe":236,"suspect":56,"high_risk":79,"synthetic":10,"number_check":223,"audio":122,"demo":26},{"date":"2026-06-18","total":350,"safe":250,"suspect":40,"high_risk":60,"synthetic":7,"number_check":187,"audio":125,"demo":38},{"date":"2026-06-19","total":387,"safe":251,"suspect":51,"high_risk":85,"synthetic":11,"number_check":223,"audio":121,"demo":43},{"date":"2026-06-20","total":270,"safe":201,"suspect":27,"high_risk":42,"synthetic":6,"number_check":156,"audio":91,"demo":23},{"date":"2026-06-21","total":260,"safe":208,"suspect":24,"high_risk":28,"synthetic":6,"number_check":159,"audio":80,"demo":21},{"date":"2026-06-22","total":363,"safe":238,"suspect":36,"high_risk":89,"synthetic":16,"number_check":220,"audio":102,"demo":41},{"date":"2026-06-23","total":373,"safe":239,"suspect":43,"high_risk":91,"synthetic":15,"number_check":208,"audio":130,"demo":35},{"date":"2026-06-24","total":351,"safe":236,"suspect":36,"high_risk":79,"synthetic":14,"number_check":200,"audio":112,"demo":39},{"date":"2026-06-25","total":390,"safe":251,"suspect":44,"high_risk":95,"synthetic":12,"number_check":223,"audio":130,"demo":37},{"date":"2026-06-26","total":369,"safe":227,"suspect":49,"high_risk":93,"synthetic":9,"number_check":224,"audio":123,"demo":22},{"date":"2026-06-27","total":251,"safe":191,"suspect":20,"high_risk":40,"synthetic":3,"number_check":149,"audio":73,"demo":29},{"date":"2026-06-28","total":232,"safe":178,"suspect":19,"high_risk":35,"synthetic":1,"number_check":133,"audio":79,"demo":20},{"date":"2026-06-29","total":337,"safe":218,"suspect":49,"high_risk":70,"synthetic":11,"number_check":178,"audio":117,"demo":42},{"date":"2026-06-30","total":403,"safe":253,"suspect":56,"high_risk":94,"synthetic":9,"number_check":230,"audio":131,"demo":42},{"date":"2026-07-01","total":371,"safe":242,"suspect":47,"high_risk":82,"synthetic":13,"number_check":197,"audio":143,"demo":31},{"date":"2026-07-02","total":404,"safe":241,"suspect":39,"high_risk":124,"synthetic":13,"number_check":212,"audio":148,"demo":44},{"date":"2026-07-03","total":369,"safe":249,"suspect":32,"high_risk":88,"synthetic":6,"number_check":216,"audio":114,"demo":39},{"date":"2026-07-04","total":279,"safe":212,"suspect":24,"high_risk":43,"synthetic":10,"number_check":158,"audio":101,"demo":20},{"date":"2026-07-05","total":302,"safe":228,"suspect":28,"high_risk":46,"synthetic":12,"number_check":171,"audio":108,"demo":23},{"date":"2026-07-06","total":359,"safe":237,"suspect":38,"high_risk":84,"synthetic":12,"number_check":202,"audio":125,"demo":32},{"date":"2026-07-07","total":391,"safe":243,"suspect":38,"high_risk":110,"synthetic":20,"number_check":231,"audio":132,"demo":28},{"date":"2026-07-08","total":366,"safe":236,"suspect":42,"high_risk":88,"synthetic":10,"number_check":209,"audio":118,"demo":39},{"date":"2026-07-09","total":383,"safe":238,"suspect":49,"high_risk":96,"synthetic":10,"number_check":218,"audio":128,"demo":37},{"date":"2026-07-10","total":420,"safe":251,"suspect":71,"high_risk":98,"synthetic":15,"number_check":234,"audio":151,"demo":35},{"date":"2026-07-11","total":300,"safe":230,"suspect":24,"high_risk":46,"synthetic":3,"number_check":175,"audio":89,"demo":36},{"date":"2026-07-12","total":323,"safe":259,"suspect":18,"high_risk":46,"synthetic":6,"number_check":184,"audio":122,"demo":17},{"date":"2026-07-13","total":414,"safe":245,"suspect":56,"high_risk":113,"synthetic":18,"number_check":227,"audio":147,"demo":40},{"date":"2026-07-14","total":515,"safe":331,"suspect":53,"high_risk":131,"synthetic":21,"number_check":296,"audio":174,"demo":45},{"date":"2026-07-15","total":539,"safe":326,"suspect":67,"high_risk":146,"synthetic":12,"number_check":308,"audio":185,"demo":46},{"date":"2026-07-16","total":492,"safe":292,"suspect":75,"high_risk":125,"synthetic":20,"number_check":279,"audio":155,"demo":58},{"date":"2026-07-17","total":520,"safe":294,"suspect":78,"high_risk":148,"synthetic":23,"number_check":302,"audio":172,"demo":46},{"date":"2026-07-18","total":425,"safe":315,"suspect":37,"high_risk":73,"synthetic":19,"number_check":240,"audio":144,"demo":41},{"date":"2026-07-19","total":401,"safe":300,"suspect":37,"high_risk":64,"synthetic":10,"number_check":220,"audio":146,"demo":35},{"date":"2026-07-20","total":606,"safe":372,"suspect":94,"high_risk":140,"synthetic":15,"number_check":361,"audio":197,"demo":48},{"date":"2026-07-21","total":608,"safe":382,"suspect":69,"high_risk":157,"synthetic":29,"number_check":357,"audio":201,"demo":50},{"date":"2026-07-22","total":510,"safe":316,"suspect":75,"high_risk":119,"synthetic":21,"number_check":286,"audio":179,"demo":45},{"date":"2026-07-23","total":515,"safe":322,"suspect":41,"high_risk":152,"synthetic":23,"number_check":305,"audio":181,"demo":29},{"date":"2026-07-24","total":504,"safe":308,"suspect":52,"high_risk":144,"synthetic":23,"number_check":275,"audio":169,"demo":60},{"date":"2026-07-25","total":354,"safe":279,"suspect":27,"high_risk":48,"synthetic":10,"number_check":207,"audio":122,"demo":25},{"date":"2026-07-26","total":358,"safe":275,"suspect":31,"high_risk":52,"synthetic":11,"number_check":198,"audio":136,"demo":24},{"date":"2026-07-27","total":475,"safe":283,"suspect":68,"high_risk":124,"synthetic":26,"number_check":254,"audio":177,"demo":44},{"date":"2026-07-28","total":407,"safe":248,"suspect":48,"high_risk":111,"synthetic":15,"number_check":238,"audio":136,"demo":33},{"date":"2026-07-29","total":400,"safe":259,"suspect":43,"high_risk":98,"synthetic":14,"number_check":219,"audio":147,"demo":34},{"date":"2026-07-30","total":470,"safe":283,"suspect":56,"high_risk":131,"synthetic":20,"number_check":275,"audio":157,"demo":38},{"date":"2026-07-31","total":396,"safe":249,"suspect":41,"high_risk":106,"synthetic":15,"number_check":217,"audio":149,"demo":30},{"date":"2026-08-01","total":324,"safe":248,"suspect":20,"high_risk":56,"synthetic":7,"number_check":198,"audio":106,"demo":20},{"date":"2026-08-02","total":312,"safe":219,"suspect":30,"high_risk":63,"synthetic":10,"number_check":164,"audio":119,"demo":29},{"date":"2026-08-03","total":433,"safe":254,"suspect":64,"high_risk":115,"synthetic":27,"number_check":224,"audio":164,"demo":45},{"date":"2026-08-04","total":391,"safe":236,"suspect":50,"high_risk":105,"synthetic":15,"number_check":209,"audio":146,"demo":36},{"date":"2026-08-05","total":416,"safe":250,"suspect":46,"high_risk":120,"synthetic":20,"number_check":239,"audio":145,"demo":32},{"date":"2026-08-06","total":389,"safe":239,"suspect":46,"high_risk":104,"synthetic":17,"number_check":197,"audio":153,"demo":39},{"date":"2026-08-07","total":447,"safe":288,"suspect":55,"high_risk":104,"synthetic":18,"number_check":237,"audio":182,"demo":28},{"date":"2026-08-08","total":316,"safe":234,"suspect":19,"high_risk":63,"synthetic":13,"number_check":184,"audio":109,"demo":23},{"date":"2026-08-09","total":303,"safe":243,"suspect":17,"high_risk":43,"synthetic":6,"number_check":180,"audio":92,"demo":31},{"date":"2026-08-10","total":433,"safe":258,"suspect":57,"high_risk":118,"synthetic":22,"number_check":244,"audio":153,"demo":36},{"date":"2026-08-11","total":498,"safe":299,"suspect":61,"high_risk":138,"synthetic":23,"number_check":288,"audio":174,"demo":36},{"date":"2026-08-12","total":420,"safe":265,"suspect":41,"high_risk":114,"synthetic":22,"number_check":237,"audio":154,"demo":29},{"date":"2026-08-13","total":494,"safe":302,"suspect":67,"high_risk":125,"synthetic":22,"number_check":274,"audio":191,"demo":29},{"date":"2026-08-14","total":441,"safe":249,"suspect":68,"high_risk":124,"synthetic":17,"number_check":221,"audio":181,"demo":39},{"date":"2026-08-15","total":358,"safe":271,"suspect":18,"high_risk":69,"synthetic":12,"number_check":195,"audio":131,"demo":32},{"date":"2026-08-16","total":354,"safe":276,"suspect":25,"high_risk":53,"synthetic":4,"number_check":199,"audio":129,"demo":26},{"date":"2026-08-17","total":418,"safe":266,"suspect":39,"high_risk":113,"synthetic":18,"number_check":229,"audio":166,"demo":23},{"date":"2026-08-18","total":481,"safe":298,"suspect":47,"high_risk":136,"synthetic":25,"number_check":264,"audio":185,"demo":32},{"date":"2026-08-19","total":479,"safe":296,"suspect":57,"high_risk":126,"synthetic":16,"number_check":275,"audio":170,"demo":34},{"date":"2026-08-20","total":487,"safe":285,"suspect":53,"high_risk":149,"synthetic":22,"number_check":263,"audio":186,"demo":38},{"date":"2026-08-21","total":452,"safe":276,"suspect":50,"high_risk":126,"synthetic":21,"number_check":272,"audio":148,"demo":32},{"date":"2026-08-22","total":348,"safe":258,"suspect":34,"high_risk":56,"synthetic":10,"number_check":200,"audio":130,"demo":18},{"date":"2026-08-23","total":352,"safe":269,"suspect":21,"high_risk":62,"synthetic":16,"number_check":197,"audio":133,"demo":22},{"date":"2026-08-24","total":541,"safe":319,"suspect":69,"high_risk":153,"synthetic":25,"number_check":326,"audio":181,"demo":34},{"date":"2026-08-25","total":518,"safe":310,"suspect":71,"high_risk":137,"synthetic":21,"number_check":303,"audio":181,"demo":34},{"date":"2026-08-26","total":520,"safe":318,"suspect":40,"high_risk":162,"synthetic":32,"number_check":305,"audio":190,"demo":25},{"date":"2026-08-27","total":484,"safe":308,"suspect":49,"high_risk":127,"synthetic":17,"number_check":293,"audio":160,"demo":31},{"date":"2026-08-28","total":575,"safe":335,"suspect":69,"high_risk":171,"synthetic":28,"number_check":322,"audio":222,"demo":31},{"date":"2026-08-29","total":444,"safe":326,"suspect":40,"high_risk":78,"synthetic":11,"number_check":246,"audio":171,"demo":27},{"date":"2026-08-30","total":451,"safe":330,"suspect":41,"high_risk":80,"synthetic":13,"number_check":251,"audio":171,"demo":29},{"date":"2026-08-31","total":581,"safe":347,"suspect":68,"high_risk":166,"synthetic":35,"number_check":322,"audio":214,"demo":45},{"date":"2026-09-01","total":644,"safe":392,"suspect":68,"high_risk":184,"synthetic":43,"number_check":369,"audio":231,"demo":44},{"date":"2026-09-02","total":660,"safe":387,"suspect":69,"high_risk":204,"synthetic":43,"number_check":402,"audio":221,"demo":37},{"date":"2026-09-03","total":723,"safe":454,"suspect":92,"high_risk":177,"synthetic":41,"number_check":423,"audio":262,"demo":38},{"date":"2026-09-04","total":639,"safe":391,"suspect":68,"high_risk":180,"synthetic":37,"number_check":379,"audio":226,"demo":34},{"date":"2026-09-05","total":550,"safe":433,"suspect":40,"high_risk":77,"synthetic":14,"number_check":302,"audio":211,"demo":37},{"date":"2026-09-06","total":487,"safe":345,"suspect":48,"high_risk":94,"synthetic":25,"number_check":290,"audio":170,"demo":27},{"date":"2026-09-07","total":575,"safe":341,"suspect":61,"high_risk":173,"synthetic":39,"number_check":331,"audio":216,"demo":28},{"date":"2026-09-08","total":599,"safe":347,"suspect":51,"high_risk":201,"synthetic":47,"number_check":340,"audio":218,"demo":41},{"date":"2026-09-09","total":556,"safe":333,"suspect":52,"high_risk":171,"synthetic":44,"number_check":299,"audio":217,"demo":40},{"date":"2026-09-10","total":583,"safe":320,"suspect":76,"high_risk":187,"synthetic":50,"number_check":328,"audio":213,"demo":42},{"date":"2026-09-11","total":525,"safe":310,"suspect":61,"high_risk":154,"synthetic":40,"number_check":307,"audio":190,"demo":28},{"date":"2026-09-12","total":432,"safe":321,"suspect":39,"high_risk":72,"synthetic":25,"number_check":241,"audio":168,"demo":23},{"date":"2026-09-13","total":380,"safe":295,"suspect":24,"high_risk":61,"synthetic":11,"number_check":223,"audio":142,"demo":15},{"date":"2026-09-14","total":569,"safe":337,"suspect":73,"high_risk":159,"synthetic":42,"number_check":325,"audio":203,"demo":41},{"date":"2026-09-15","total":599,"safe":340,"suspect":59,"high_risk":200,"synthetic":34,"number_check":360,"audio":217,"demo":22},{"date":"2026-09-16","total":488,"safe":279,"suspect":65,"high_risk":144,"synthetic":40,"number_check":285,"audio":181,"demo":22},{"date":"2026-09-17","total":556,"safe":337,"suspect":57,"high_risk":162,"synthetic":35,"number_check":322,"audio":204,"demo":30},{"date":"2026-09-18","total":510,"safe":304,"suspect":58,"high_risk":148,"synthetic":30,"number_check":304,"audio":177,"demo":29},{"date":"2026-09-19","total":383,"safe":300,"suspect":21,"high_risk":62,"synthetic":18,"number_check":240,"audio":131,"demo":12},{"date":"2026-09-20","total":396,"safe":285,"suspect":27,"high_risk":84,"synthetic":21,"number_check":226,"audio":147,"demo":23},{"date":"2026-09-21","total":605,"safe":356,"suspect":62,"high_risk":187,"synthetic":40,"number_check":347,"audio":240,"demo":18},{"date":"2026-09-22","total":516,"safe":314,"suspect":57,"high_risk":145,"synthetic":26,"number_check":315,"audio":178,"demo":23},{"date":"2026-09-23","total":575,"safe":333,"suspect":55,"high_risk":187,"synthetic":50,"number_check":334,"audio":223,"demo":18},{"date":"2026-09-24","total":639,"safe":357,"suspect":78,"high_risk":204,"synthetic":51,"number_check":372,"audio":242,"demo":25},{"date":"2026-09-25","total":531,"safe":309,"suspect":63,"high_risk":159,"synthetic":33,"number_check":321,"audio":191,"demo":19},{"date":"2026-09-26","total":438,"safe":329,"suspect":24,"high_risk":85,"synthetic":26,"number_check":239,"audio":179,"demo":20},{"date":"2026-09-27","total":389,"safe":299,"suspect":22,"high_risk":68,"synthetic":11,"number_check":238,"audio":135,"demo":16},{"date":"2026-09-28","total":595,"safe":339,"suspect":64,"high_risk":192,"synthetic":34,"number_check":364,"audio":211,"demo":20},{"date":"2026-09-29","total":496,"safe":292,"suspect":44,"high_risk":160,"synthetic":47,"number_check":283,"audio":190,"demo":23},{"date":"2026-09-30","total":612,"safe":350,"suspect":71,"high_risk":191,"synthetic":45,"number_check":371,"audio":222,"demo":19}],"monthly":[{"month":"2026-04","total_checks":6901,"high_risk":1211,"suspect":877,"high_risk_pct":17.5,"synthetic_calls":103,"synthetic_pct_of_audio_high_risk":16.1,"new_scam_numbers":267,"reports":482,"median_hours_to_blacklist":44.6,"p75_hours_to_blacklist":65.8,"est_prevented_loss_thb":313794},{"month":"2026-05","total_checks":8560,"high_risk":1671,"suspect":1102,"high_risk_pct":19.5,"synthetic_calls":165,"synthetic_pct_of_audio_high_risk":20.2,"new_scam_numbers":240,"reports":541,"median_hours_to_blacklist":41.8,"p75_hours_to_blacklist":58.9,"est_prevented_loss_thb":432990},{"month":"2026-06","total_checks":9777,"high_risk":2036,"suspect":1160,"high_risk_pct":20.8,"synthetic_calls":270,"synthetic_pct_of_audio_high_risk":26.4,"new_scam_numbers":243,"reports":578,"median_hours_to_blacklist":31.7,"p75_hours_to_blacklist":44.8,"est_prevented_loss_thb":527568},{"month":"2026-07","total_checks":13176,"high_risk":3133,"suspect":1498,"high_risk_pct":23.8,"synthetic_calls":475,"synthetic_pct_of_audio_high_risk":32.2,"new_scam_numbers":295,"reports":737,"median_hours_to_blacklist":28.8,"p75_hours_to_blacklist":41.0,"est_prevented_loss_thb":811823},{"month":"2026-08","total_checks":13460,"high_risk":3356,"suspect":1432,"high_risk_pct":24.9,"synthetic_calls":565,"synthetic_pct_of_audio_high_risk":35.0,"new_scam_numbers":305,"reports":787,"median_hours_to_blacklist":20.7,"p75_hours_to_blacklist":30.3,"est_prevented_loss_thb":869607},{"month":"2026-09","total_checks":16250,"high_risk":4472,"suspect":1649,"high_risk_pct":27.5,"synthetic_calls":1042,"synthetic_pct_of_audio_high_risk":50.8,"new_scam_numbers":304,"reports":894,"median_hours_to_blacklist":14.3,"p75_hours_to_blacklist":20.3,"est_prevented_loss_thb":1158785}],"heatmap":[{"weekday":0,"hour":0,"high_risk_calls":9},{"weekday":0,"hour":1,"high_risk_calls":4},{"weekday":0,"hour":2,"high_risk_calls":4},{"weekday":0,"hour":3,"high_risk_calls":9},{"weekday":0,"hour":4,"high_risk_calls":4},{"weekday":0,"hour":5,"high_risk_calls":5},{"weekday":0,"hour":6,"high_risk_calls":13},{"weekday":0,"hour":7,"high_risk_calls":54},{"weekday":0,"hour":8,"high_risk_calls":132},{"weekday":0,"hour":9,"high_risk_calls":263},{"weekday":0,"hour":10,"high_risk_calls":344},{"weekday":0,"hour":11,"high_risk_calls":300},{"weekday":0,"hour":12,"high_risk_calls":135},{"weekday":0,"hour":13,"high_risk_calls":266},{"weekday":0,"hour":14,"high_risk_calls":307},{"weekday":0,"hour":15,"high_risk_calls":277},{"weekday":0,"hour":16,"high_risk_calls":202},{"weekday":0,"hour":17,"high_risk_calls":112},{"weekday":0,"hour":18,"high_risk_calls":68},{"weekday":0,"hour":19,"high_risk_calls":57},{"weekday":0,"hour":20,"high_risk_calls":39},{"weekday":0,"hour":21,"high_risk_calls":24},{"weekday":0,"hour":22,"high_risk_calls":20},{"weekday":0,"hour":23,"high_risk_calls":11},{"weekday":1,"hour":0,"high_risk_calls":9},{"weekday":1,"hour":1,"high_risk_calls":4},{"weekday":1,"hour":2,"high_risk_calls":6},{"weekday":1,"hour":3,"high_risk_calls":1},{"weekday":1,"hour":4,"high_risk_calls":7},{"weekday":1,"hour":5,"high_risk_calls":8},{"weekday":1,"hour":6,"high_risk_calls":18},{"weekday":1,"hour":7,"high_risk_calls":57},{"weekday":1,"hour":8,"high_risk_calls":123},{"weekday":1,"hour":9,"high_risk_calls":271},{"weekday":1,"hour":10,"high_risk_calls":351},{"weekday":1,"hour":11,"high_risk_calls":307},{"weekday":1,"hour":12,"high_risk_calls":143},{"weekday":1,"hour":13,"high_risk_calls":286},{"weekday":1,"hour":14,"high_risk_calls":320},{"weekday":1,"hour":15,"high_risk_calls":273},{"weekday":1,"hour":16,"high_risk_calls":213},{"weekday":1,"hour":17,"high_risk_calls":140},{"weekday":1,"hour":18,"high_risk_calls":95},{"weekday":1,"hour":19,"high_risk_calls":75},{"weekday":1,"hour":20,"high_risk_calls":51},{"weekday":1,"hour":21,"high_risk_calls":37},{"weekday":1,"hour":22,"high_risk_calls":23},{"weekday":1,"hour":23,"high_risk_calls":12},{"weekday":2,"hour":0,"high_risk_calls":9},{"weekday":2,"hour":1,"high_risk_calls":4},{"weekday":2,"hour":2,"high_risk_calls":5},{"weekday":2,"hour":3,"high_risk_calls":3},{"weekday":2,"hour":4,"high_risk_calls":2},{"weekday":2,"hour":5,"high_risk_calls":10},{"weekday":2,"hour":6,"high_risk_calls":26},{"weekday":2,"hour":7,"high_risk_calls":46},{"weekday":2,"hour":8,"high_risk_calls":123},{"weekday":2,"hour":9,"high_risk_calls":278},{"weekday":2,"hour":10,"high_risk_calls":322},{"weekday":2,"hour":11,"high_risk_calls":295},{"weekday":2,"hour":12,"high_risk_calls":149},{"weekday":2,"hour":13,"high_risk_calls":297},{"weekday":2,"hour":14,"high_risk_calls":306},{"weekday":2,"hour":15,"high_risk_calls":285},{"weekday":2,"hour":16,"high_risk_calls":223},{"weekday":2,"hour":17,"high_risk_calls":118},{"weekday":2,"hour":18,"high_risk_calls":66},{"weekday":2,"hour":19,"high_risk_calls":67},{"weekday":2,"hour":20,"high_risk_calls":45},{"weekday":2,"hour":21,"high_risk_calls":39},{"weekday":2,"hour":22,"high_risk_calls":23},{"weekday":2,"hour":23,"high_risk_calls":13},{"weekday":3,"hour":0,"high_risk_calls":11},{"weekday":3,"hour":1,"high_risk_calls":5},{"weekday":3,"hour":2,"high_risk_calls":5},{"weekday":3,"hour":3,"high_risk_calls":8},{"weekday":3,"hour":4,"high_risk_calls":6},{"weekday":3,"hour":5,"high_risk_calls":10},{"weekday":3,"hour":6,"high_risk_calls":12},{"weekday":3,"hour":7,"high_risk_calls":46},{"weekday":3,"hour":8,"high_risk_calls":128},{"weekday":3,"hour":9,"high_risk_calls":249},{"weekday":3,"hour":10,"high_risk_calls":313},{"weekday":3,"hour":11,"high_risk_calls":326},{"weekday":3,"hour":12,"high_risk_calls":181},{"weekday":3,"hour":13,"high_risk_calls":245},{"weekday":3,"hour":14,"high_risk_calls":270},{"weekday":3,"hour":15,"high_risk_calls":269},{"weekday":3,"hour":16,"high_risk_calls":210},{"weekday":3,"hour":17,"high_risk_calls":127},{"weekday":3,"hour":18,"high_risk_calls":83},{"weekday":3,"hour":19,"high_risk_calls":62},{"weekday":3,"hour":20,"high_risk_calls":47},{"weekday":3,"hour":21,"high_risk_calls":38},{"weekday":3,"hour":22,"high_risk_calls":23},{"weekday":3,"hour":23,"high_risk_calls":11},{"weekday":4,"hour":0,"high_risk_calls":7},{"weekday":4,"hour":1,"high_risk_calls":4},{"weekday":4,"hour":2,"high_risk_calls":6},{"weekday":4,"hour":3,"high_risk_calls":4},{"weekday":4,"hour":4,"high_risk_calls":5},{"weekday":4,"hour":5,"high_risk_calls":10},{"weekday":4,"hour":6,"high_risk_calls":18},{"weekday":4,"hour":7,"high_risk_calls":52},{"weekday":4,"hour":8,"high_risk_calls":142},{"weekday":4,"hour":9,"high_risk_calls":254},{"weekday":4,"hour":10,"high_risk_calls":292},{"weekday":4,"hour":11,"high_risk_calls":300},{"weekday":4,"hour":12,"high_risk_calls":158},{"weekday":4,"hour":13,"high_risk_calls":245},{"weekday":4,"hour":14,"high_risk_calls":300},{"weekday":4,"hour":15,"high_risk_calls":272},{"weekday":4,"hour":16,"high_risk_calls":209},{"weekday":4,"hour":17,"high_risk_calls":104},{"weekday":4,"hour":18,"high_risk_calls":82},{"weekday":4,"hour":19,"high_risk_calls":58},{"weekday":4,"hour":20,"high_risk_calls":38},{"weekday":4,"hour":21,"high_risk_calls":33},{"weekday":4,"hour":22,"high_risk_calls":23},{"weekday":4,"hour":23,"high_risk_calls":8},{"weekday":5,"hour":0,"high_risk_calls":0},{"weekday":5,"hour":1,"high_risk_calls":0},{"weekday":5,"hour":2,"high_risk_calls":1},{"weekday":5,"hour":3,"high_risk_calls":2},{"weekday":5,"hour":4,"high_risk_calls":2},{"weekday":5,"hour":5,"high_risk_calls":3},{"weekday":5,"hour":6,"high_risk_calls":7},{"weekday":5,"hour":7,"high_risk_calls":34},{"weekday":5,"hour":8,"high_risk_calls":51},{"weekday":5,"hour":9,"high_risk_calls":98},{"weekday":5,"hour":10,"high_risk_calls":149},{"weekday":5,"hour":11,"high_risk_calls":130},{"weekday":5,"hour":12,"high_risk_calls":80},{"weekday":5,"hour":13,"high_risk_calls":122},{"weekday":5,"hour":14,"high_risk_calls":138},{"weekday":5,"hour":15,"high_risk_calls":134},{"weekday":5,"hour":16,"high_risk_calls":74},{"weekday":5,"hour":17,"high_risk_calls":49},{"weekday":5,"hour":18,"high_risk_calls":47},{"weekday":5,"hour":19,"high_risk_calls":31},{"weekday":5,"hour":20,"high_risk_calls":20},{"weekday":5,"hour":21,"high_risk_calls":13},{"weekday":5,"hour":22,"high_risk_calls":5},{"weekday":5,"hour":23,"high_risk_calls":1},{"weekday":6,"hour":0,"high_risk_calls":3},{"weekday":6,"hour":1,"high_risk_calls":3},{"weekday":6,"hour":2,"high_risk_calls":0},{"weekday":6,"hour":3,"high_risk_calls":3},{"weekday":6,"hour":4,"high_risk_calls":0},{"weekday":6,"hour":5,"high_risk_calls":1},{"weekday":6,"hour":6,"high_risk_calls":9},{"weekday":6,"hour":7,"high_risk_calls":19},{"weekday":6,"hour":8,"high_risk_calls":62},{"weekday":6,"hour":9,"high_risk_calls":123},{"weekday":6,"hour":10,"high_risk_calls":128},{"weekday":6,"hour":11,"high_risk_calls":104},{"weekday":6,"hour":12,"high_risk_calls":66},{"weekday":6,"hour":13,"high_risk_calls":114},{"weekday":6,"hour":14,"high_risk_calls":128},{"weekday":6,"hour":15,"high_risk_calls":120},{"weekday":6,"hour":16,"high_risk_calls":87},{"weekday":6,"hour":17,"high_risk_calls":52},{"weekday":6,"hour":18,"high_risk_calls":44},{"weekday":6,"hour":19,"high_risk_calls":25},{"weekday":6,"hour":20,"high_risk_calls":22},{"weekday":6,"hour":21,"high_risk_calls":14},{"weekday":6,"hour":22,"high_risk_calls":2},{"weekday":6,"hour":23,"high_risk_calls":7}],"categories":[{"month":"2026-04","category_code":"impersonate_police","category_name":"แอบอ้างเป็นตำรวจ/DSI","reports":189},{"month":"2026-04","category_code":"impersonate_bank","category_name":"แอบอ้างเป็นเจ้าหน้าที่ธนาคาร","reports":90},{"month":"2026-04","category_code":"parcel","category_name":"พัสดุผิดกฎหมาย/ค้างส่ง","reports":80},{"month":"2026-04","category_code":"investment","category_name":"ชวนลงทุนผลตอบแทนสูง","reports":50},{"month":"2026-04","category_code":"loan","category_name":"เงินกู้ออนไลน์","reports":39},{"month":"2026-04","category_code":"refund","category_name":"คืนเงิน/ภาษี/ค่าไฟ","reports":46},{"month":"2026-04","category_code":"voice_clone","category_name":"ใช้เสียงสังเคราะห์เลียนแบบคนรู้จัก","reports":49},{"month":"2026-04","category_code":"other","category_name":"อื่น ๆ","reports":49},{"month":"2026-05","category_code":"impersonate_police","category_name":"แอบอ้างเป็นตำรวจ/DSI","reports":173},{"month":"2026-05","category_code":"impersonate_bank","category_name":"แอบอ้างเป็นเจ้าหน้าที่ธนาคาร","reports":127},{"month":"2026-05","category_code":"parcel","category_name":"พัสดุผิดกฎหมาย/ค้างส่ง","reports":84},{"month":"2026-05","category_code":"investment","category_name":"ชวนลงทุนผลตอบแทนสูง","reports":59},{"month":"2026-05","category_code":"loan","category_name":"เงินกู้ออนไลน์","reports":50},{"month":"2026-05","category_code":"refund","category_name":"คืนเงิน/ภาษี/ค่าไฟ","reports":70},{"month":"2026-05","category_code":"voice_clone","category_name":"ใช้เสียงสังเคราะห์เลียนแบบคนรู้จัก","reports":70},{"month":"2026-05","category_code":"other","category_name":"อื่น ๆ","reports":51},{"month":"2026-06","category_code":"impersonate_police","category_name":"แอบอ้างเป็นตำรวจ/DSI","reports":183},{"month":"2026-06","category_code":"impersonate_bank","category_name":"แอบอ้างเป็นเจ้าหน้าที่ธนาคาร","reports":132},{"month":"2026-06","category_code":"parcel","category_name":"พัสดุผิดกฎหมาย/ค้างส่ง","reports":95},{"month":"2026-06","category_code":"investment","category_name":"ชวนลงทุนผลตอบแทนสูง","reports":77},{"month":"2026-06","category_code":"loan","category_name":"เงินกู้ออนไลน์","reports":55},{"month":"2026-06","category_code":"refund","category_name":"คืนเงิน/ภาษี/ค่าไฟ","reports":35},{"month":"2026-06","category_code":"voice_clone","category_name":"ใช้เสียงสังเคราะห์เลียนแบบคนรู้จัก","reports":68},{"month":"2026-06","category_code":"other","category_name":"อื่น ๆ","reports":62},{"month":"2026-07","category_code":"impersonate_police","category_name":"แอบอ้างเป็นตำรวจ/DSI","reports":174},{"month":"2026-07","category_code":"impersonate_bank","category_name":"แอบอ้างเป็นเจ้าหน้าที่ธนาคาร","reports":140},{"month":"2026-07","category_code":"parcel","category_name":"พัสดุผิดกฎหมาย/ค้างส่ง","reports":158},{"month":"2026-07","category_code":"investment","category_name":"ชวนลงทุนผลตอบแทนสูง","reports":112},{"month":"2026-07","category_code":"loan","category_name":"เงินกู้ออนไลน์","reports":68},{"month":"2026-07","category_code":"refund","category_name":"คืนเงิน/ภาษี/ค่าไฟ","reports":62},{"month":"2026-07","category_code":"voice_clone","category_name":"ใช้เสียงสังเคราะห์เลียนแบบคนรู้จัก","reports":123},{"month":"2026-07","category_code":"other","category_name":"อื่น ๆ","reports":84},{"month":"2026-08","category_code":"impersonate_police","category_name":"แอบอ้างเป็นตำรวจ/DSI","reports":174},{"month":"2026-08","category_code":"impersonate_bank","category_name":"แอบอ้างเป็นเจ้าหน้าที่ธนาคาร","reports":181},{"month":"2026-08","category_code":"parcel","category_name":"พัสดุผิดกฎหมาย/ค้างส่ง","reports":137},{"month":"2026-08","category_code":"investment","category_name":"ชวนลงทุนผลตอบแทนสูง","reports":121},{"month":"2026-08","category_code":"loan","category_name":"เงินกู้ออนไลน์","reports":56},{"month":"2026-08","category_code":"refund","category_name":"คืนเงิน/ภาษี/ค่าไฟ","reports":51},{"month":"2026-08","category_code":"voice_clone","category_name":"ใช้เสียงสังเคราะห์เลียนแบบคนรู้จัก","reports":166},{"month":"2026-08","category_code":"other","category_name":"อื่น ๆ","reports":90},{"month":"2026-09","category_code":"impersonate_police","category_name":"แอบอ้างเป็นตำรวจ/DSI","reports":210},{"month":"2026-09","category_code":"impersonate_bank","category_name":"แอบอ้างเป็นเจ้าหน้าที่ธนาคาร","reports":202},{"month":"2026-09","category_code":"parcel","category_name":"พัสดุผิดกฎหมาย/ค้างส่ง","reports":98},{"month":"2026-09","category_code":"investment","category_name":"ชวนลงทุนผลตอบแทนสูง","reports":131},{"month":"2026-09","category_code":"loan","category_name":"เงินกู้ออนไลน์","reports":61},{"month":"2026-09","category_code":"refund","category_name":"คืนเงิน/ภาษี/ค่าไฟ","reports":68},{"month":"2026-09","category_code":"voice_clone","category_name":"ใช้เสียงสังเคราะห์เลียนแบบคนรู้จัก","reports":252},{"month":"2026-09","category_code":"other","category_name":"อื่น ๆ","reports":92}],"pareto":[{"rank":1,"pct_numbers":0.06,"cum_pct_calls":1.97},{"rank":17,"pct_numbers":0.98,"cum_pct_calls":17.61},{"rank":34,"pct_numbers":1.97,"cum_pct_calls":25.38},{"rank":51,"pct_numbers":2.95,"cum_pct_calls":30.55},{"rank":68,"pct_numbers":3.94,"cum_pct_calls":34.42},{"rank":85,"pct_numbers":4.92,"cum_pct_calls":37.75},{"rank":102,"pct_numbers":5.91,"cum_pct_calls":40.64},{"rank":119,"pct_numbers":6.89,"cum_pct_calls":43.2},{"rank":136,"pct_numbers":7.88,"cum_pct_calls":45.49},{"rank":153,"pct_numbers":8.86,"cum_pct_calls":47.58},{"rank":170,"pct_numbers":9.85,"cum_pct_calls":49.53},{"rank":187,"pct_numbers":10.83,"cum_pct_calls":51.38},{"rank":204,"pct_numbers":11.82,"cum_pct_calls":53.14},{"rank":221,"pct_numbers":12.8,"cum_pct_calls":54.77},{"rank":238,"pct_numbers":13.79,"cum_pct_calls":56.31},{"rank":255,"pct_numbers":14.77,"cum_pct_calls":57.76},{"rank":272,"pct_numbers":15.76,"cum_pct_calls":59.1},{"rank":289,"pct_numbers":16.74,"cum_pct_calls":60.38},{"rank":306,"pct_numbers":17.73,"cum_pct_calls":61.64},{"rank":323,"pct_numbers":18.71,"cum_pct_calls":62.82},{"rank":340,"pct_numbers":19.7,"cum_pct_calls":64.0},{"rank":357,"pct_numbers":20.68,"cum_pct_calls":65.11},{"rank":374,"pct_numbers":21.67,"cum_pct_calls":66.18},{"rank":391,"pct_numbers":22.65,"cum_pct_calls":67.25},{"rank":408,"pct_numbers":23.64,"cum_pct_calls":68.23},{"rank":425,"pct_numbers":24.62,"cum_pct_calls":69.19},{"rank":442,"pct_numbers":25.61,"cum_pct_calls":70.16},{"rank":459,"pct_numbers":26.59,"cum_pct_calls":71.05},{"rank":476,"pct_numbers":27.58,"cum_pct_calls":71.91},{"rank":493,"pct_numbers":28.56,"cum_pct_calls":72.76},{"rank":510,"pct_numbers":29.55,"cum_pct_calls":73.62},{"rank":527,"pct_numbers":30.53,"cum_pct_calls":74.37},{"rank":544,"pct_numbers":31.52,"cum_pct_calls":75.12},{"rank":561,"pct_numbers":32.5,"cum_pct_calls":75.87},{"rank":578,"pct_numbers":33.49,"cum_pct_calls":76.62},{"rank":595,"pct_numbers":34.47,"cum_pct_calls":77.37},{"rank":612,"pct_numbers":35.46,"cum_pct_calls":78.02},{"rank":629,"pct_numbers":36.44,"cum_pct_calls":78.66},{"rank":646,"pct_numbers":37.43,"cum_pct_calls":79.31},{"rank":663,"pct_numbers":38.41,"cum_pct_calls":79.95},{"rank":680,"pct_numbers":39.4,"cum_pct_calls":80.59},{"rank":697,"pct_numbers":40.38,"cum_pct_calls":81.23},{"rank":714,"pct_numbers":41.37,"cum_pct_calls":81.88},{"rank":731,"pct_numbers":42.35,"cum_pct_calls":82.52},{"rank":748,"pct_numbers":43.34,"cum_pct_calls":83.07},{"rank":765,"pct_numbers":44.32,"cum_pct_calls":83.6},{"rank":782,"pct_numbers":45.31,"cum_pct_calls":84.14},{"rank":799,"pct_numbers":46.29,"cum_pct_calls":84.67},{"rank":816,"pct_numbers":47.28,"cum_pct_calls":85.21},{"rank":833,"pct_numbers":48.26,"cum_pct_calls":85.74},{"rank":850,"pct_numbers":49.25,"cum_pct_calls":86.28},{"rank":867,"pct_numbers":50.23,"cum_pct_calls":86.81},{"rank":884,"pct_numbers":51.22,"cum_pct_calls":87.27},{"rank":901,"pct_numbers":52.2,"cum_pct_calls":87.7},{"rank":918,"pct_numbers":53.19,"cum_pct_calls":88.13},{"rank":935,"pct_numbers":54.17,"cum_pct_calls":88.56},{"rank":952,"pct_numbers":55.16,"cum_pct_calls":88.99},{"rank":969,"pct_numbers":56.14,"cum_pct_calls":89.41},{"rank":986,"pct_numbers":57.13,"cum_pct_calls":89.84},{"rank":1003,"pct_numbers":58.11,"cum_pct_calls":90.27},{"rank":1020,"pct_numbers":59.1,"cum_pct_calls":90.7},{"rank":1037,"pct_numbers":60.08,"cum_pct_calls":91.13},{"rank":1054,"pct_numbers":61.07,"cum_pct_calls":91.55},{"rank":1071,"pct_numbers":62.05,"cum_pct_calls":91.88},{"rank":1088,"pct_numbers":63.04,"cum_pct_calls":92.2},{"rank":1105,"pct_numbers":64.02,"cum_pct_calls":92.52},{"rank":1122,"pct_numbers":65.01,"cum_pct_calls":92.85},{"rank":1139,"pct_numbers":65.99,"cum_pct_calls":93.17},{"rank":1156,"pct_numbers":66.98,"cum_pct_calls":93.49},{"rank":1173,"pct_numbers":67.96,"cum_pct_calls":93.81},{"rank":1190,"pct_numbers":68.95,"cum_pct_calls":94.13},{"rank":1207,"pct_numbers":69.93,"cum_pct_calls":94.45},{"rank":1224,"pct_numbers":70.92,"cum_pct_calls":94.77},{"rank":1241,"pct_numbers":71.9,"cum_pct_calls":95.09},{"rank":1258,"pct_numbers":72.89,"cum_pct_calls":95.42},{"rank":1275,"pct_numbers":73.87,"cum_pct_calls":95.67},{"rank":1292,"pct_numbers":74.86,"cum_pct_calls":95.89},{"rank":1309,"pct_numbers":75.84,"cum_pct_calls":96.1},{"rank":1326,"pct_numbers":76.83,"cum_pct_calls":96.32},{"rank":1343,"pct_numbers":77.81,"cum_pct_calls":96.53},{"rank":1360,"pct_numbers":78.79,"cum_pct_calls":96.74},{"rank":1377,"pct_numbers":79.78,"cum_pct_calls":96.96},{"rank":1394,"pct_numbers":80.76,"cum_pct_calls":97.17},{"rank":1411,"pct_numbers":81.75,"cum_pct_calls":97.39},{"rank":1428,"pct_numbers":82.73,"cum_pct_calls":97.6},{"rank":1445,"pct_numbers":83.72,"cum_pct_calls":97.81},{"rank":1462,"pct_numbers":84.7,"cum_pct_calls":98.03},{"rank":1479,"pct_numbers":85.69,"cum_pct_calls":98.24},{"rank":1496,"pct_numbers":86.67,"cum_pct_calls":98.46},{"rank":1513,"pct_numbers":87.66,"cum_pct_calls":98.66},{"rank":1530,"pct_numbers":88.64,"cum_pct_calls":98.77},{"rank":1547,"pct_numbers":89.63,"cum_pct_calls":98.87},{"rank":1564,"pct_numbers":90.61,"cum_pct_calls":98.98},{"rank":1581,"pct_numbers":91.6,"cum_pct_calls":99.09},{"rank":1598,"pct_numbers":92.58,"cum_pct_calls":99.19},{"rank":1615,"pct_numbers":93.57,"cum_pct_calls":99.3},{"rank":1632,"pct_numbers":94.55,"cum_pct_calls":99.41},{"rank":1649,"pct_numbers":95.54,"cum_pct_calls":99.52},{"rank":1666,"pct_numbers":96.52,"cum_pct_calls":99.62},{"rank":1683,"pct_numbers":97.51,"cum_pct_calls":99.73},{"rank":1700,"pct_numbers":98.49,"cum_pct_calls":99.84},{"rank":1717,"pct_numbers":99.48,"cum_pct_calls":99.94},{"rank":1726,"pct_numbers":100.0,"cum_pct_calls":100.0}],"top_numbers":[{"phone_masked":"087-xxx-4286","high_risk_calls":313,"report_count":"19","risk_score":"99","main_category":"ใช้เสียงสังเคราะห์เลียนแบบคนรู้จัก","first_seen":"2026-09-09","active_days":22},{"phone_masked":"089-xxx-3471","high_risk_calls":280,"report_count":"13","risk_score":"99","main_category":"ใช้เสียงสังเคราะห์เลียนแบบคนรู้จัก","first_seen":"2026-08-31","active_days":31},{"phone_masked":"086-xxx-5968","high_risk_calls":276,"report_count":"17","risk_score":"99","main_category":"ชวนลงทุนผลตอบแทนสูง","first_seen":"2026-08-23","active_days":35},{"phone_masked":"061-xxx-5120","high_risk_calls":212,"report_count":"10","risk_score":"98","main_category":"ใช้เสียงสังเคราะห์เลียนแบบคนรู้จัก","first_seen":"2026-08-12","active_days":31},{"phone_masked":"082-xxx-1539","high_risk_calls":211,"report_count":"13","risk_score":"95","main_category":"เงินกู้ออนไลน์","first_seen":"2026-09-06","active_days":25},{"phone_masked":"096-xxx-2639","high_risk_calls":184,"report_count":"12","risk_score":"97","main_category":"ชวนลงทุนผลตอบแทนสูง","first_seen":"2026-05-09","active_days":42},{"phone_masked":"089-xxx-3306","high_risk_calls":157,"report_count":"13","risk_score":"99","main_category":"คืนเงิน/ภาษี/ค่าไฟ","first_seen":"2026-07-13","active_days":40},{"phone_masked":"091-xxx-5336","high_risk_calls":146,"report_count":"14","risk_score":"99","main_category":"แอบอ้างเป็นตำรวจ/DSI","first_seen":"2026-05-22","active_days":32},{"phone_masked":"096-xxx-7260","high_risk_calls":136,"report_count":"12","risk_score":"99","main_category":"คืนเงิน/ภาษี/ค่าไฟ","first_seen":"2026-04-01","active_days":21},{"phone_masked":"096-xxx-5608","high_risk_calls":135,"report_count":"6","risk_score":"99","main_category":"แอบอ้างเป็นเจ้าหน้าที่ธนาคาร","first_seen":"2026-08-21","active_days":16}],"prefix":[{"prefix":"08x (มือถือ)","high_risk_calls":6535},{"prefix":"09x (มือถือ)","high_risk_calls":5422},{"prefix":"06x (มือถือ)","high_risk_calls":2687},{"prefix":"02 (เบอร์บ้าน/ปลอมเป็นองค์กร)","high_risk_calls":1235}],"partners":[{"month":"2026-04","bank":141,"telco":102,"gov":173,"anonymous":66,"partner_accounts":12},{"month":"2026-05","bank":187,"telco":144,"gov":133,"anonymous":77,"partner_accounts":17},{"month":"2026-06","bank":209,"telco":127,"gov":168,"anonymous":74,"partner_accounts":26},{"month":"2026-07","bank":234,"telco":218,"gov":195,"anonymous":90,"partner_accounts":31},{"month":"2026-08","bank":289,"telco":203,"gov":194,"anonymous":101,"partner_accounts":35},{"month":"2026-09","bank":381,"telco":196,"gov":209,"anonymous":108,"partner_accounts":35}],"sources":[{"month":"2026-04","number_check":3731,"audio":2101,"demo":1069},{"month":"2026-05","number_check":4705,"audio":2742,"demo":1113},{"month":"2026-06","number_check":5529,"audio":3210,"demo":1038},{"month":"2026-07","number_check":7471,"audio":4553,"demo":1152},{"month":"2026-08","number_check":7558,"audio":4937,"demo":965},{"month":"2026-09","number_check":9480,"audio":5956,"demo":814}]};
+const TH_MONTH = { "01": "ม.ค.", "02": "ก.พ.", "03": "มี.ค.", "04": "เม.ย.", "05": "พ.ค.", "06": "มิ.ย.", "07": "ก.ค.", "08": "ส.ค.", "09": "ก.ย.", "10": "ต.ค.", "11": "พ.ย.", "12": "ธ.ค." };
+const TH_DAY = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
+const TH_DAY_FULL = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์"];
+const fmt = n => Math.round(n).toLocaleString("en-US");
+const fmt1 = n => (Math.round(n * 10) / 10).toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const mLabel = m => TH_MONTH[m.slice(5, 7)];
+const dLabel = d => `${+d.slice(8, 10)} ${TH_MONTH[d.slice(5, 7)]}`;
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+function s(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, str, attrs = {}) { const t = s("text", { x, y, ...attrs }, parent); t.textContent = str; return t; }
+function niceMax(v) { const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
+function svgFor(el, w, h) { el.innerHTML = ""; return s("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" }, el); }
+
+/* ---------- tooltip ---------- */
+const tip = $("tip");
+function showTip(html, ev) {
+  tip.innerHTML = html; tip.style.opacity = 1;
+  const r = tip.getBoundingClientRect();
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - 14;
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+}
+function hideTip() { tip.style.opacity = 0; }
+const row = (color, label, val) => `<div class="row"><span>${color ? `<i style="background:${color}"></i>` : ""}${label}</span><span>${val}</span></div>`;
+
+/* ---------- state ---------- */
+let RANGE = "all";
+const daily = DATA.daily;
+function rangeDays() {
+  if (RANGE === "all") return daily;
+  return daily.slice(-Number(RANGE));
+}
+function prevDays() {
+  if (RANGE === "all") return null;
+  const n = Number(RANGE);
+  return daily.slice(-2 * n, -n);
+}
+const sum = (rows, k) => rows.reduce((a, r) => a + r[k], 0);
+const rangeLabel = () => { const r = rangeDays(); return `${dLabel(r[0].date)} – ${dLabel(r[r.length - 1].date)} 2026`; };
+
+/* ---------- KPI ---------- */
+function deltaHtml(cur, prev, upIsBad = true, isPct = false) {
+  if (prev == null) return "";
+  const d = isPct ? cur - prev : (prev ? (cur - prev) / prev * 100 : 0);
+  const cls = Math.abs(d) < 0.5 ? "neu" : ((d > 0) === upIsBad ? "bad" : "good");
+  const sign = d > 0 ? "+" : d < 0 ? "−" : "±";
+  return `<span class="delta ${cls}">${sign}${fmt1(Math.abs(d))}${isPct ? " จุด" : "%"}</span>`;
+}
+function renderKpis() {
+  const r = rangeDays(), p = prevDays();
+  const tot = sum(r, "total"), hi = sum(r, "high_risk"), syn = sum(r, "synthetic"), sus = sum(r, "suspect");
+  const pt = p && sum(p, "total"), ph = p && sum(p, "high_risk"), ps = p && sum(p, "synthetic");
+  const vs = p ? `เทียบ ${p.length} วันก่อนหน้า` : "1 เม.ย. – 30 ก.ย. 2026";
+  $("kpis").innerHTML = [
+    ["var(--signal)", "การตรวจทั้งหมด", fmt(tot), `${deltaHtml(tot, pt, false)}${vs}`],
+    ["var(--high)", "สายเสี่ยงสูง (คะแนน ≥ 80)", fmt(hi), `${deltaHtml(hi / tot * 100, p ? ph / pt * 100 : null, true, true)}${fmt1(hi / tot * 100)}% ของการตรวจ`],
+    ["var(--suspect)", "สายน่าสงสัย (50–79)", fmt(sus), `${fmt1(sus / tot * 100)}% ของการตรวจ`],
+    ["var(--high)", "ตรวจพบเสียงสังเคราะห์", fmt(syn), `${deltaHtml(syn, ps, true)}${p ? vs : "เฉลี่ย " + fmt(syn / r.length) + " สาย/วัน"}`],
+  ].map(([c, k, v, sub]) => `<div class="kpi"><div class="k"><i style="background:${c}"></i>${k}</div><div class="v">${v}</div><div class="sub">${sub}</div></div>`).join("");
+}
+
+/* ---------- 1. daily stacked area ---------- */
+function rolling(rows, k, w = 7) {
+  return rows.map((_, i) => { const a = rows.slice(Math.max(0, i - w + 1), i + 1); return a.reduce((x, r) => x + r[k], 0) / a.length; });
+}
+const WAVES = [{ from: "2026-07-10", to: "2026-07-28", label: "คลื่นพัสดุ" }, { from: "2026-08-24", to: "2026-09-13", label: "คลื่นเสียงโคลน" }];
+function renderDaily() {
+  const el = $("c-daily"), W = Math.max(320, el.clientWidth), H = W < 520 ? 260 : 320;
+  const m = { l: 44, r: 12, t: 22, b: 28 };
+  const all = daily, startIdx = all.length - rangeDays().length;
+  // rolling over full series, then slice, so the first days of a range are not distorted
+  const S = { safe: rolling(all, "safe"), suspect: rolling(all, "suspect"), high_risk: rolling(all, "high_risk") };
+  const rows = all.slice(startIdx).map((d, i) => ({ date: d.date, raw: d, safe: S.safe[startIdx + i], suspect: S.suspect[startIdx + i], high: S.high_risk[startIdx + i] }));
+  const ymax = niceMax(Math.max(...rows.map(r => r.safe + r.suspect + r.high)));
+  const svg = svgFor(el, W, H);
+  const x = i => m.l + (W - m.l - m.r) * (rows.length === 1 ? 0 : i / (rows.length - 1));
+  const y = v => H - m.b - (H - m.t - m.b) * v / ymax;
+  // waves
+  WAVES.forEach(wv => {
+    const i0 = rows.findIndex(r => r.date >= wv.from), i1 = rows.findIndex(r => r.date > wv.to);
+    if (i0 < 0) return;
+    const xe = i1 < 0 ? x(rows.length - 1) : x(i1);
+    s("rect", { x: x(i0), y: m.t, width: Math.max(0, xe - x(i0)), height: H - m.t - m.b, fill: "var(--line)" }, svg);
+    const nearEnd = x(i0) + 90 > W - m.r;
+    txt(svg, nearEnd ? xe : x(i0) + 4, m.t - 6, wv.label, { class: "lab", "font-size": 11, "text-anchor": nearEnd ? "end" : "start" });
+  });
+  for (let i = 0; i <= 4; i++) {
+    const v = ymax * i / 4;
+    s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: i ? "gridl" : "base" }, svg);
+    txt(svg, m.l - 6, y(v) + 4, fmt(v), { "text-anchor": "end" });
+  }
+  const layers = [["safe", "var(--safe)", r => 0, r => r.safe], ["suspect", "var(--suspect)", r => r.safe, r => r.safe + r.suspect], ["high", "var(--high)", r => r.safe + r.suspect, r => r.safe + r.suspect + r.high]];
+  layers.forEach(([k, c, lo, hi]) => {
+    let d = rows.map((r, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(hi(r)).toFixed(1)}`).join("");
+    d += rows.slice().reverse().map((r, j) => `L${x(rows.length - 1 - j).toFixed(1)},${y(lo(r)).toFixed(1)}`).join("") + "Z";
+    s("path", { d, fill: c, "fill-opacity": 0.9, stroke: "var(--surface)", "stroke-width": 1.5, "stroke-linejoin": "round" }, svg);
+  });
+  // month ticks
+  rows.forEach((r, i) => {
+    if (r.date.endsWith("-01") || (i === 0 && rows.length < 60)) {
+      txt(svg, x(i), H - m.b + 16, i === 0 && !r.date.endsWith("-01") ? dLabel(r.date) : mLabel(r.date), { "text-anchor": i === 0 ? "start" : "middle" });
+      s("line", { x1: x(i), x2: x(i), y1: H - m.b, y2: H - m.b + 4, class: "base" }, svg);
+    }
+  });
+  if (rows.length < 60) rows.forEach((r, i) => { if (i % 7 === 0 && i && !r.date.endsWith("-01")) txt(svg, x(i), H - m.b + 16, dLabel(r.date), { "text-anchor": "middle" }); });
+  // end label for high risk share
+  const last = rows[rows.length - 1];
+  const share = last.high / (last.safe + last.suspect + last.high) * 100;
+  // crosshair
+  const cross = s("line", { y1: m.t, y2: H - m.b, stroke: "var(--ink)", "stroke-width": 1, opacity: 0 }, svg);
+  const dot = s("circle", { r: 4.5, fill: "var(--high)", stroke: "var(--surface)", "stroke-width": 2, opacity: 0 }, svg);
+  const hit = s("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, class: "hit" }, svg);
+  const move = ev => {
+    const pt = svg.getBoundingClientRect(); const sx = (ev.clientX - pt.left) * W / pt.width;
+    const i = Math.max(0, Math.min(rows.length - 1, Math.round((sx - m.l) / (W - m.l - m.r) * (rows.length - 1))));
+    const r = rows[i], d = r.raw;
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("opacity", .35);
+    dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(r.safe + r.suspect + r.high)); dot.setAttribute("opacity", 1);
+    const wave = WAVES.find(w => r.date >= w.from && r.date <= w.to);
+    showTip(`<b>${TH_DAY_FULL[(new Date(r.date + "T00:00:00").getDay() + 6) % 7]} ${dLabel(r.date)} 2026</b>${wave ? ` · ${wave.label}` : ""}
+      ${row("", "ตรวจทั้งหมด", fmt(d.total))}${row("var(--high)", "เสี่ยงสูง", fmt(d.high_risk))}${row("var(--suspect)", "น่าสงสัย", fmt(d.suspect))}${row("var(--safe)", "ปลอดภัย", fmt(d.safe))}${row("", "เสียงสังเคราะห์", fmt(d.synthetic))}
+      <div style="opacity:.7;margin-top:4px;font-size:11.5px">ค่าบนกราฟ = เฉลี่ย 7 วัน</div>`, ev);
+  };
+  hit.addEventListener("pointermove", move); hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", () => { cross.setAttribute("opacity", 0); dot.setAttribute("opacity", 0); hideTip(); });
+}
+function renderMonthlyTable() {
+  $("tb-monthly").innerHTML = `<table><thead><tr><th>เดือน</th><th class="r">ตรวจ</th><th class="r">เสี่ยงสูง</th><th class="r">%</th><th class="r">น่าสงสัย</th><th class="r">เสียง AI</th></tr></thead><tbody>${DATA.monthly.map(m => `<tr><td>${mLabel(m.month)} 2026</td><td class="r num">${fmt(m.total_checks)}</td><td class="r num">${fmt(m.high_risk)}</td><td class="r num">${fmt1(m.high_risk_pct)}</td><td class="r num">${fmt(m.suspect)}</td><td class="r num">${fmt(m.synthetic_calls)}</td></tr>`).join("")}</tbody></table>`;
+}
+function storyCh1() {
+  const M = DATA.monthly, a = M[0], b = M[M.length - 1];
+  const per = m => m.total_checks / (m.month.endsWith("04") || m.month.endsWith("06") || m.month.endsWith("09") ? 30 : 31);
+  $("t1a").textContent = `ในเดือนเมษายน ระบบตรวจสายเฉลี่ย ${fmt(per(a))} สายต่อวัน พอถึงกันยายนเพิ่มเป็น ${fmt(per(b))} สายต่อวัน หรือ ${fmt1(per(b) / per(a))} เท่า เพราะมีพันธมิตรและผู้ใช้เข้ามาเพิ่ม`;
+  $("t1b").textContent = `แต่สิ่งที่น่ากังวลกว่าคือสัดส่วนสายเสี่ยงสูงขยับจาก ${fmt1(a.high_risk_pct)}% เป็น ${fmt1(b.high_risk_pct)}% ทุก ๆ 4 สายที่ตรวจ จะมีมากกว่า 1 สายที่เป็นมิจฉาชีพ`;
+}
+
+/* ---------- 2a. synthetic share columns ---------- */
+function renderSyn() {
+  const el = $("c-syn"), W = Math.max(260, el.clientWidth), H = 240, m = { l: 34, r: 8, t: 22, b: 26 };
+  const rows = DATA.monthly, svg = svgFor(el, W, H), ymax = 60;
+  const bw = Math.min(24, (W - m.l - m.r) / rows.length * 0.55);
+  const x = i => m.l + (W - m.l - m.r) * (i + 0.5) / rows.length;
+  const y = v => H - m.b - (H - m.t - m.b) * v / ymax;
+  [0, 20, 40, 60].forEach(v => { s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: v ? "gridl" : "base" }, svg); txt(svg, m.l - 6, y(v) + 4, v + "%", { "text-anchor": "end" }); });
+  rows.forEach((r, i) => {
+    const v = r.synthetic_pct_of_audio_high_risk, x0 = x(i) - bw / 2, y0 = y(v), h = H - m.b - y0, rr = Math.min(4, h);
+    s("path", { d: `M${x0},${H - m.b}V${y0 + rr}Q${x0},${y0} ${x0 + rr},${y0}H${x0 + bw - rr}Q${x0 + bw},${y0} ${x0 + bw},${y0 + rr}V${H - m.b}Z`, fill: "var(--high)", opacity: i === rows.length - 1 ? 1 : 0.55 }, svg);
+    if (i === 0 || i === rows.length - 1) txt(svg, x(i), y0 - 6, fmt1(v) + "%", { class: "val", "text-anchor": "middle" });
+    txt(svg, x(i), H - m.b + 16, mLabel(r.month), { "text-anchor": "middle" });
+    const hit = s("rect", { x: x(i) - (W - m.l - m.r) / rows.length / 2, y: m.t, width: (W - m.l - m.r) / rows.length, height: H - m.t - m.b, class: "hit" }, svg);
+    hit.addEventListener("pointermove", ev => showTip(`<b>${mLabel(r.month)} 2026</b>${row("var(--high)", "เสียง AI ในสายเสี่ยงสูง", fmt1(v) + "%")}${row("", "สายเสียง AI ทั้งหมด", fmt(r.synthetic_calls))}`, ev));
+    hit.addEventListener("pointerleave", hideTip);
+  });
+}
+/* ---------- 2b. slope chart of category ranks ---------- */
+function renderSlope() {
+  const el = $("c-slope"), W = Math.max(260, el.clientWidth), H = 240;
+  const months = [...new Set(DATA.categories.map(c => c.month))], m0 = months[0], m1 = months[months.length - 1];
+  const get = mm => DATA.categories.filter(c => c.month === mm).sort((a, b) => b.reports - a.reports);
+  const A = get(m0), B = get(m1);
+  const rankA = Object.fromEntries(A.map((c, i) => [c.category_code, i])), rankB = Object.fromEntries(B.map((c, i) => [c.category_code, i]));
+  const svg = svgFor(el, W, H), pad = 22, lx = W * 0.40, rx = W * 0.60, top = 26, step = (H - top - 10) / A.length;
+  const y = i => top + step * i + step / 2;
+  txt(svg, lx, 12, mLabel(m0), { "text-anchor": "end", class: "lab" });
+  txt(svg, rx, 12, mLabel(m1), { "text-anchor": "start", class: "lab" });
+  const short = { impersonate_police: "ตำรวจ/DSI ปลอม", impersonate_bank: "ธนาคารปลอม", parcel: "พัสดุ", investment: "ลงทุน", loan: "เงินกู้", refund: "คืนเงิน/ภาษี", voice_clone: "เสียงโคลน", other: "อื่น ๆ" };
+  A.forEach(c => {
+    const code = c.category_code, hl = code === "voice_clone", col = hl ? "var(--high)" : "var(--axis)";
+    const ya = y(rankA[code]), yb = y(rankB[code]), cb = B[rankB[code]];
+    s("line", { x1: lx + 6, y1: ya, x2: rx - 6, y2: yb, stroke: col, "stroke-width": hl ? 2.5 : 1.5, "stroke-linecap": "round" }, svg);
+    s("circle", { cx: lx + 6, cy: ya, r: 4, fill: col, stroke: "var(--surface)", "stroke-width": 2 }, svg);
+    s("circle", { cx: rx - 6, cy: yb, r: 4, fill: col, stroke: "var(--surface)", "stroke-width": 2 }, svg);
+    txt(svg, lx - 4, ya + 4, `${short[code]} ${c.reports}`, { "text-anchor": "end", class: hl ? "lab strong" : "", "font-size": W < 340 ? 10 : 11 });
+    txt(svg, rx + 4, yb + 4, `${cb.reports} ${short[code]}`, { "text-anchor": "start", class: hl ? "lab strong" : "", "font-size": W < 340 ? 10 : 11 });
+  });
+  return { A, B, rankA, rankB };
+}
+function storyCh2(sl) {
+  const M = DATA.monthly, a = M[0], b = M[M.length - 1];
+  const vcA = sl.A.find(c => c.category_code === "voice_clone"), vcB = sl.B.find(c => c.category_code === "voice_clone");
+  $("t2a").textContent = `ระบบวิเคราะห์ไฟล์เสียงของสายที่ผู้ใช้ส่งเข้ามา ในเดือนเมษายน สายเสี่ยงสูงที่เป็นเสียงสังเคราะห์มี ${fmt1(a.synthetic_pct_of_audio_high_risk)}% แต่ในเดือนกันยายนเพิ่มเป็น ${fmt1(b.synthetic_pct_of_audio_high_risk)}%`;
+  $("t2b").textContent = `รูปแบบ “ใช้เสียงสังเคราะห์เลียนแบบคนรู้จัก” ขยับจากอันดับ ${sl.rankA.voice_clone + 1} ขึ้นเป็นอันดับ ${sl.rankB.voice_clone + 1} โดยมีการแจ้งเพิ่มจาก ${vcA.reports} เป็น ${vcB.reports} ครั้งต่อเดือน (${fmt1(vcB.reports / vcA.reports)} เท่า)`;
+}
+
+/* ---------- 3. heatmap ---------- */
+function renderHeat() {
+  const el = $("c-heat"), W = Math.max(320, el.clientWidth);
+  const narrow = W < 560, m = { l: 34, r: 4, t: 18, b: 6 };
+  const cw = (W - m.l - m.r) / 24, ch = narrow ? 22 : 30, gap = 2, H = m.t + ch * 7 + m.b;
+  const cells = DATA.heatmap, max = Math.max(...cells.map(c => c.high_risk_calls));
+  const steps = ["var(--heat-0)", "var(--heat-1)", "var(--heat-2)", "var(--heat-3)", "var(--heat-4)"];
+  const bucket = v => Math.max(0, Math.min(4, Math.floor(v / max * 5 - 1e-9)));
+  const svg = svgFor(el, W, H);
+  for (let h = 0; h < 24; h += narrow ? 3 : 2) txt(svg, m.l + cw * h + cw / 2, 12, String(h).padStart(2, "0"), { "text-anchor": "middle" });
+  TH_DAY.forEach((d, i) => txt(svg, m.l - 8, m.t + ch * i + ch / 2 + 4, d, { "text-anchor": "end", class: "lab" }));
+  cells.forEach(c => {
+    const r = s("rect", { x: m.l + cw * c.hour + gap / 2, y: m.t + ch * c.weekday + gap / 2, width: cw - gap, height: ch - gap, rx: 3, fill: steps[bucket(c.high_risk_calls)] }, svg);
+    r.addEventListener("pointermove", ev => showTip(`<b>วัน${TH_DAY_FULL[c.weekday]} ${String(c.hour).padStart(2, "0")}:00–${String(c.hour).padStart(2, "0")}:59</b>${row("var(--high)", "สายเสี่ยงสูง", fmt(c.high_risk_calls))}${row("", "เฉลี่ยต่อสัปดาห์", fmt1(c.high_risk_calls / 26))}`, ev));
+    r.addEventListener("pointerleave", hideTip);
+  });
+  $("heat-legend").innerHTML = steps.map((c, i) => `<span><i style="background:${c}"></i>${i === 0 ? "น้อย" : i === 4 ? "มาก" : ""}</span>`).join("");
+}
+function storyCh3() {
+  const c = DATA.heatmap, tot = c.reduce((a, x) => a + x.high_risk_calls, 0);
+  const office = c.filter(x => x.weekday < 5 && x.hour >= 9 && x.hour < 17).reduce((a, x) => a + x.high_risk_calls, 0);
+  const peak = c.reduce((a, x) => x.high_risk_calls > a.high_risk_calls ? x : a);
+  const byHour = Array.from({ length: 24 }, (_, h) => c.filter(x => x.hour === h).reduce((a, x) => a + x.high_risk_calls, 0));
+  const top2 = byHour.map((v, h) => [v, h]).sort((a, b) => b[0] - a[0]).slice(0, 2).map(x => x[1]).sort((a, b) => a - b);
+  const wkend = c.filter(x => x.weekday >= 5).reduce((a, x) => a + x.high_risk_calls, 0);
+  $("t3a").textContent = `สายเสี่ยงสูงกระจุกอยู่ในช่วงเช้าและบ่ายของวันทำงาน ช่วงพีคคือ ${String(top2[0]).padStart(2, "0")}:00 และ ${String(top2[1]).padStart(2, "0")}:00 น. มีช่วงพักเที่ยงที่สายลดลงชัดเจน ส่วนเสาร์–อาทิตย์รวมกันมีเพียง ${fmt1(wkend / tot * 100)}%`;
+  $("t3b").textContent = `${fmt1(office / tot * 100)}% ของสายเสี่ยงสูงเกิดในวันจันทร์–ศุกร์ เวลา 09–17 น. ช่องที่หนักที่สุดคือวัน${TH_DAY_FULL[peak.weekday]} ${String(peak.hour).padStart(2, "0")}:00 น.`;
+}
+
+/* ---------- 4. pareto + prefix + top ---------- */
+function renderPareto() {
+  const el = $("c-pareto"), W = Math.max(260, el.clientWidth), H = 240, m = { l: 36, r: 12, t: 14, b: 28 };
+  const pts = [{ pct_numbers: 0, cum_pct_calls: 0 }, ...DATA.pareto], svg = svgFor(el, W, H);
+  const x = v => m.l + (W - m.l - m.r) * v / 100, y = v => H - m.b - (H - m.t - m.b) * v / 100;
+  [0, 25, 50, 75, 100].forEach(v => { s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: v ? "gridl" : "base" }, svg); txt(svg, m.l - 6, y(v) + 4, v + "%", { "text-anchor": "end" }); });
+  [0, 25, 50, 75, 100].forEach(v => txt(svg, x(v), H - m.b + 16, v + "%", { "text-anchor": v === 0 ? "start" : v === 100 ? "end" : "middle" }));
+  txt(svg, W - m.r, H - m.b - 6, "% ของเบอร์", { "text-anchor": "end" });
+  s("line", { x1: x(0), y1: y(0), x2: x(100), y2: y(100), stroke: "var(--axis)", "stroke-width": 1 }, svg);
+  const d = pts.map((p, i) => `${i ? "L" : "M"}${x(p.pct_numbers).toFixed(1)},${y(p.cum_pct_calls).toFixed(1)}`).join("");
+  s("path", { d: d + `L${x(100)},${y(0)}L${x(0)},${y(0)}Z`, fill: "var(--high)", "fill-opacity": .1 }, svg);
+  s("path", { d, fill: "none", stroke: "var(--high)", "stroke-width": 2, "stroke-linejoin": "round" }, svg);
+  const ten = DATA.pareto.find(p => p.pct_numbers >= 10);
+  s("line", { x1: x(ten.pct_numbers), x2: x(ten.pct_numbers), y1: y(0), y2: y(ten.cum_pct_calls), stroke: "var(--ink-2)", "stroke-dasharray": "0", "stroke-width": 1, opacity: .5 }, svg);
+  s("circle", { cx: x(ten.pct_numbers), cy: y(ten.cum_pct_calls), r: 5, fill: "var(--high)", stroke: "var(--surface)", "stroke-width": 2 }, svg);
+  txt(svg, x(ten.pct_numbers) + 8, y(ten.cum_pct_calls) + 14, `10% แรก = ${fmt1(ten.cum_pct_calls)}% ของสาย`, { class: "val" });
+  const hit = s("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, class: "hit" }, svg);
+  hit.addEventListener("pointermove", ev => {
+    const pt = svg.getBoundingClientRect(), v = ((ev.clientX - pt.left) * W / pt.width - m.l) / (W - m.l - m.r) * 100;
+    const p = DATA.pareto.find(p => p.pct_numbers >= v) || DATA.pareto[DATA.pareto.length - 1];
+    showTip(`<b>เบอร์ ${fmt1(p.pct_numbers)}% แรก</b>${row("", "จำนวนเบอร์", fmt(p.rank))}${row("var(--high)", "ก่อสายเสี่ยงสูง", fmt1(p.cum_pct_calls) + "%")}`, ev);
+  });
+  hit.addEventListener("pointerleave", hideTip);
+}
+function renderPrefix() {
+  const el = $("c-prefix"), W = Math.max(260, el.clientWidth), rows = DATA.prefix, bh = 22, gap = 22, H = rows.length * (bh + gap) + 4;
+  const svg = svgFor(el, W, H), max = Math.max(...rows.map(r => r.high_risk_calls)), tot = rows.reduce((a, r) => a + r.high_risk_calls, 0);
+  const lw = 0, vw = 92, x = v => (W - vw) * v / max;
+  rows.forEach((r, i) => {
+    const y0 = i * (bh + gap) + 16, w = Math.max(2, x(r.high_risk_calls)), spoof = r.prefix.startsWith("02");
+    txt(svg, 0, y0 - 5, r.prefix, { class: "lab" });
+    s("path", { d: `M0,${y0}H${w - 4}Q${w},${y0} ${w},${y0 + 4}V${y0 + bh - 4}Q${w},${y0 + bh} ${w - 4},${y0 + bh}H0Z`, fill: spoof ? "var(--high)" : "var(--axis)" }, svg);
+    txt(svg, w + 6, y0 + bh / 2 + 4, `${fmt(r.high_risk_calls)} · ${fmt1(r.high_risk_calls / tot * 100)}%`, { class: "val" });
+  });
+}
+function renderTop() {
+  const max = DATA.top_numbers[0].high_risk_calls;
+  $("tb-top").innerHTML = `<table><thead><tr><th>เบอร์</th><th>รูปแบบหลัก</th><th class="r">สายเสี่ยงสูง</th><th></th><th class="r">ถูกแจ้ง</th><th class="r">คะแนน</th><th class="r">ใช้งาน (วัน)</th></tr></thead><tbody>${DATA.top_numbers.map(t => `<tr><td class="mono">${t.phone_masked}</td><td>${t.main_category.includes("เสียงสังเคราะห์") ? `<span class="pill vc">${t.main_category}</span>` : t.main_category}</td><td class="r num">${fmt(t.high_risk_calls)}</td><td style="width:90px;min-width:60px"><div class="minibar" style="width:${t.high_risk_calls / max * 100}%"></div></td><td class="r num">${t.report_count}</td><td class="r num">${t.risk_score}</td><td class="r num">${t.active_days}</td></tr>`).join("")}</tbody></table>`;
+}
+function storyCh4() {
+  const S = DATA.summary, ten = DATA.pareto.find(p => p.pct_numbers >= 10);
+  const pre = DATA.prefix, tot = pre.reduce((a, r) => a + r.high_risk_calls, 0), sp = pre.find(p => p.prefix.startsWith("02"));
+  const avgDays = DATA.top_numbers.reduce((a, t) => a + t.active_days, 0) / DATA.top_numbers.length;
+  const vc = DATA.top_numbers.filter(t => t.main_category.includes("เสียงสังเคราะห์")).length;
+  $("t4a").textContent = `ตลอด 6 เดือน มีเบอร์ที่ก่อสายเสี่ยงสูง ${fmt(S.unique_scam_numbers)} เบอร์ แต่ไม่ได้ก่อเหตุเท่ากัน เบอร์ ${fmt(ten.rank)} เบอร์แรก (10%) ก่อสายไปแล้ว ${fmt1(ten.cum_pct_calls)}%`;
+  $("t4b").textContent = `ข่าวดีคือเป้าหมายมีขนาดเล็ก ถ้าปิดกลุ่มหัวแถวได้เร็ว จะลดสายอันตรายได้ราวครึ่งหนึ่ง`;
+  $("t4c").textContent = `เบอร์ใน 10 อันดับแรกใช้งานเฉลี่ยเพียง ${fmt1(avgDays)} วันแล้วทิ้ง และ ${vc} ใน 10 เบอร์ใช้เสียงโคลน อีก ${fmt1(sp.high_risk_calls / tot * 100)}% ของสายเสี่ยงสูงมาจากเบอร์ขึ้นต้น 02 ที่ปลอมเป็นสำนักงานธนาคารหรือสถานีตำรวจ`;
+}
+
+/* ---------- 5. lag line + partner stacked ---------- */
+function renderLag() {
+  const el = $("c-lag"), W = Math.max(260, el.clientWidth), H = 240, m = { l: 34, r: 14, t: 18, b: 26 };
+  const rows = DATA.monthly, svg = svgFor(el, W, H), ymax = niceMax(Math.max(...rows.map(r => r.p75_hours_to_blacklist)));
+  const x = i => m.l + (W - m.l - m.r) * i / (rows.length - 1), y = v => H - m.b - (H - m.t - m.b) * v / ymax;
+  for (let i = 0; i <= 4; i++) { const v = ymax * i / 4; s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: i ? "gridl" : "base" }, svg); txt(svg, m.l - 6, y(v) + 4, fmt(v), { "text-anchor": "end" }); }
+  // p75 band as wash
+  const band = rows.map((r, i) => `${i ? "L" : "M"}${x(i)},${y(r.p75_hours_to_blacklist)}`).join("") + rows.slice().reverse().map((r, j) => `L${x(rows.length - 1 - j)},${y(0)}`).join("") + "Z";
+  s("path", { d: band, fill: "var(--safe)", "fill-opacity": .1 }, svg);
+  s("path", { d: rows.map((r, i) => `${i ? "L" : "M"}${x(i)},${y(r.median_hours_to_blacklist)}`).join(""), fill: "none", stroke: "var(--safe)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+  rows.forEach((r, i) => {
+    txt(svg, x(i), H - m.b + 16, mLabel(r.month), { "text-anchor": "middle" });
+    const last = i === rows.length - 1, first = i === 0;
+    s("circle", { cx: x(i), cy: y(r.median_hours_to_blacklist), r: last || first ? 5 : 3.5, fill: "var(--safe)", stroke: "var(--surface)", "stroke-width": 2 }, svg);
+    if (first || last) txt(svg, x(i) + (last ? 0 : 8), y(r.median_hours_to_blacklist) - 12, `${fmt1(r.median_hours_to_blacklist)} ชม.`, { class: "val", "text-anchor": last ? "end" : "start" });
+    const hit = s("rect", { x: x(i) - (W - m.l - m.r) / rows.length / 2, y: m.t, width: (W - m.l - m.r) / rows.length, height: H - m.t - m.b, class: "hit" }, svg);
+    hit.addEventListener("pointermove", ev => showTip(`<b>เบอร์ที่เห็นครั้งแรกใน ${mLabel(r.month)}</b>${row("var(--safe)", "มัธยฐาน", fmt1(r.median_hours_to_blacklist) + " ชม.")}${row("", "75% ปิดได้ภายใน", fmt1(r.p75_hours_to_blacklist) + " ชม.")}${row("", "เบอร์ใหม่", fmt(r.new_scam_numbers))}`, ev));
+    hit.addEventListener("pointerleave", hideTip);
+  });
+}
+function renderPartner() {
+  const el = $("c-partner"), W = Math.max(260, el.clientWidth), H = 226, m = { l: 34, r: 8, t: 14, b: 26 };
+  const rows = DATA.partners, keys = [["bank", "var(--bank)", "ธนาคาร"], ["telco", "var(--telco)", "Telco"], ["gov", "var(--gov)", "หน่วยงานรัฐ"], ["anonymous", "var(--anon)", "ไม่ระบุ"]];
+  const tot = r => keys.reduce((a, [k]) => a + r[k], 0), ymax = niceMax(Math.max(...rows.map(tot)));
+  const svg = svgFor(el, W, H), bw = Math.min(24, (W - m.l - m.r) / rows.length * 0.55);
+  const x = i => m.l + (W - m.l - m.r) * (i + 0.5) / rows.length, y = v => H - m.b - (H - m.t - m.b) * v / ymax;
+  for (let i = 0; i <= 4; i++) { const v = ymax * i / 4; s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: i ? "gridl" : "base" }, svg); txt(svg, m.l - 6, y(v) + 4, fmt(v), { "text-anchor": "end" }); }
+  rows.forEach((r, i) => {
+    let acc = 0; const x0 = x(i) - bw / 2;
+    keys.forEach(([k, c], j) => {
+      const y1 = y(acc), y0 = y(acc + r[k]); acc += r[k];
+      const top = j === keys.length - 1, h = Math.max(0, y1 - y0 - 2);
+      if (top) { const rr = Math.min(4, h); s("path", { d: `M${x0},${y1 - 2}V${y1 - 2 - h + rr}Q${x0},${y1 - 2 - h} ${x0 + rr},${y1 - 2 - h}H${x0 + bw - rr}Q${x0 + bw},${y1 - 2 - h} ${x0 + bw},${y1 - 2 - h + rr}V${y1 - 2}Z`, fill: c }, svg); }
+      else s("rect", { x: x0, y: y0, width: bw, height: Math.max(0, y1 - y0 - (j ? 2 : 0)), fill: c }, svg);
+    });
+    txt(svg, x(i), y(tot(r)) - 6, fmt(tot(r)), { class: "val", "text-anchor": "middle" });
+    txt(svg, x(i), H - m.b + 16, mLabel(r.month), { "text-anchor": "middle" });
+    const hit = s("rect", { x: x(i) - (W - m.l - m.r) / rows.length / 2, y: m.t, width: (W - m.l - m.r) / rows.length, height: H - m.t - m.b, class: "hit" }, svg);
+    hit.addEventListener("pointermove", ev => showTip(`<b>${mLabel(r.month)} 2026 · ${r.partner_accounts} บัญชีพันธมิตร</b>${keys.slice().reverse().map(([k, c, l]) => row(c, l, fmt(r[k]))).join("")}${row("", "รวม", fmt(tot(r)))}`, ev));
+    hit.addEventListener("pointerleave", hideTip);
+  });
+}
+function storyCh5() {
+  const M = DATA.monthly, a = M[0], b = M[M.length - 1], P = DATA.partners, pa = P[0], pb = P[P.length - 1];
+  $("t5a").textContent = `บัญชีพันธมิตรเพิ่มจาก ${pa.partner_accounts} เป็น ${pb.partner_accounts} บัญชี การแจ้งเบาะแสต่อเดือนเพิ่มจาก ${fmt(a.reports)} เป็น ${fmt(b.reports)} ครั้ง โดยธนาคารเป็นผู้แจ้งมากที่สุดในเดือนกันยายน (${fmt(pb.bank)} ครั้ง)`;
+  $("t5b").textContent = `เวลาตั้งแต่ระบบเห็นสายแรกของเบอร์ใหม่ จนมีคนแจ้งให้ขึ้น blacklist ลดจาก ${fmt1(a.median_hours_to_blacklist)} ชั่วโมง เหลือ ${fmt1(b.median_hours_to_blacklist)} ชั่วโมง เร็วขึ้น ${fmt1(a.median_hours_to_blacklist / b.median_hours_to_blacklist)} เท่า`;
+}
+
+/* ---------- 6. impact ---------- */
+function renderImpact() {
+  const conv = Number($("conv").value) / 100, avg = DATA.summary.avg_loss_thb;
+  const r = rangeDays(), hi = sum(r, "high_risk"), val = hi * conv * avg;
+  $("conv-v").textContent = (conv * 100).toFixed(1) + "%";
+  $("imp-range").textContent = `ช่วง ${rangeLabel()}`;
+  $("imp-big").textContent = `฿${fmt1(val / 1e6)} ล้าน`;
+  $("imp-sub").textContent = `เทียบเท่าป้องกันเหยื่อได้ราว ${fmt(hi * conv)} คน จากสายเสี่ยงสูงที่เตือนทัน ${fmt(hi)} สาย`;
+  $("imp-formula").innerHTML = `${fmt(hi)} สายเสี่ยงสูง<br>× ${(conv * 100).toFixed(1)}% (สมมติฐาน)<br>× ฿${fmt(avg)} ต่อเหยื่อ (GASA)<br>= ฿${fmt(val)}`;
+  // monthly bars
+  const el = $("c-impact"), W = Math.max(260, el.clientWidth), H = 240, m = { l: 34, r: 8, t: 22, b: 26 };
+  const rows = DATA.monthly.map(mm => ({ month: mm.month, v: mm.high_risk * conv * avg / 1e6 }));
+  const ymax = niceMax(Math.max(...rows.map(r => r.v)) * 1.05), svg = svgFor(el, W, H), bw = Math.min(24, (W - m.l - m.r) / rows.length * 0.55);
+  const x = i => m.l + (W - m.l - m.r) * (i + 0.5) / rows.length, y = v => H - m.b - (H - m.t - m.b) * v / ymax;
+  for (let i = 0; i <= 4; i++) { const v = ymax * i / 4; s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: i ? "gridl" : "base" }, svg); txt(svg, m.l - 6, y(v) + 4, fmt1(v), { "text-anchor": "end" }); }
+  const inRange = new Set(r.map(d => d.date.slice(0, 7)));
+  rows.forEach((rw, i) => {
+    const x0 = x(i) - bw / 2, y0 = y(rw.v), h = H - m.b - y0, rr = Math.min(4, h);
+    s("path", { d: `M${x0},${H - m.b}V${y0 + rr}Q${x0},${y0} ${x0 + rr},${y0}H${x0 + bw - rr}Q${x0 + bw},${y0} ${x0 + bw},${y0 + rr}V${H - m.b}Z`, fill: "var(--safe)", opacity: inRange.has(rw.month) ? 1 : .35 }, svg);
+    txt(svg, x(i), y0 - 6, fmt1(rw.v), { class: "val", "text-anchor": "middle" });
+    txt(svg, x(i), H - m.b + 16, mLabel(rw.month), { "text-anchor": "middle" });
+  });
+}
+
+/* ---------- footer counts ---------- */
+function renderFoot() {
+  const S = DATA.summary;
+  $("f-calls").textContent = fmt(S.total_checks); $("f-bl").textContent = fmt(S.blacklist_numbers); $("f-rep").textContent = fmt(S.reports); $("f-users").textContent = S.partners;
+}
+
+/* ---------- boot ---------- */
+let slope;
+function renderAll() {
+  renderKpis(); renderDaily(); renderSyn(); slope = renderSlope(); renderHeat(); renderPareto(); renderPrefix(); renderLag(); renderPartner(); renderImpact();
+}
+function boot() {
+  renderMonthlyTable(); renderTop(); renderFoot(); renderAll();
+  storyCh1(); storyCh2(slope); storyCh3(); storyCh4(); storyCh5();
+  document.querySelectorAll("#range button").forEach(b => b.addEventListener("click", () => {
+    RANGE = b.dataset.range;
+    document.querySelectorAll("#range button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    renderKpis(); renderDaily(); renderImpact();
+  }));
+  $("conv").addEventListener("input", renderImpact);
+  let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(renderAll, 120); });
+  addEventListener("scroll", hideTip, { passive: true });
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+</script>
+
+</html>

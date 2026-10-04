@@ -1,0 +1,800 @@
+<title>VoiceGuard Threat Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: report-style long read. Each chapter = narrative column (left) + evidence (right), stacked on phones. */
+:root {
+  --navy: #0B1F4B;            /* Guard Navy — brand */
+  --signal: #1E6BFF;          /* Signal Blue — brand accent */
+  --bg: #F4F7FB;              /* Cloud White */
+  --surface: #FFFFFF;
+  --ink: #0E1726;
+  --ink-2: #44506A;
+  --muted: #7A8499;
+  --grid: #E3E8F0;
+  --axis: #C5CDDA;
+  --line: rgba(14, 23, 38, 0.10);
+  --safe: #12A389;            /* Verified Mint (stepped for contrast) */
+  --suspect: #E39612;
+  --high: #E8394F;            /* Threat Coral (stepped) */
+  --high-wash: rgba(232, 57, 79, 0.10);
+  --safe-wash: rgba(18, 163, 137, 0.12);
+  --bank: #2a78d6;
+  --telco: #eda100;
+  --gov: #4a3aa7;
+  --anon: #A9B1C1;
+  --context-bg: #0B1F4B;
+  --context-ink: #F4F7FB;
+  --context-muted: #A8B6D6;
+  --heat-0: #FBECEE; --heat-1: #F6C4CB; --heat-2: #EE8D9A; --heat-3: #E8394F; --heat-4: #A6162A;
+  --f-display: "Prompt", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans Thai", "Prompt", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #081230; --surface: #0F1B3D; --ink: #F4F7FB; --ink-2: #C3CCE0; --muted: #8C97B2;
+    --grid: #1C2A52; --axis: #2B3B66; --line: rgba(255,255,255,0.10);
+    --safe: #0FA287; --suspect: #B87A10; --high: #F2475C;
+    --high-wash: rgba(242, 71, 92, 0.16); --safe-wash: rgba(15, 162, 135, 0.18);
+    --bank: #3987e5; --telco: #c98500; --gov: #9085e9; --anon: #56627F;
+    --context-bg: #13265C; --context-ink: #F4F7FB; --context-muted: #A8B6D6;
+    --heat-0: #1A2347; --heat-1: #4A2340; --heat-2: #8A2A45; --heat-3: #D23A52; --heat-4: #FF7A8A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #081230; --surface: #0F1B3D; --ink: #F4F7FB; --ink-2: #C3CCE0; --muted: #8C97B2;
+  --grid: #1C2A52; --axis: #2B3B66; --line: rgba(255,255,255,0.10);
+  --safe: #0FA287; --suspect: #B87A10; --high: #F2475C;
+  --high-wash: rgba(242, 71, 92, 0.16); --safe-wash: rgba(15, 162, 135, 0.18);
+  --bank: #3987e5; --telco: #c98500; --gov: #9085e9; --anon: #56627F;
+  --context-bg: #13265C; --context-ink: #F4F7FB; --context-muted: #A8B6D6;
+  --heat-0: #1A2347; --heat-1: #4A2340; --heat-2: #8A2A45; --heat-3: #D23A52; --heat-4: #FF7A8A;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.25; }
+p { margin: 0; }
+a { color: var(--signal); }
+.mono, .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+/* ---------- masthead ---------- */
+.mast { background: var(--navy); color: #F4F7FB; padding-block: 28px 30px; }
+.mast .wrap { display: grid; gap: 18px; }
+.brandline { display: flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #A8B6D6; flex-wrap: wrap; }
+.brandline svg { flex: none; }
+.brandline .sep { opacity: .4; }
+.mast h1 { font-size: clamp(28px, 4.4vw, 46px); font-weight: 700; max-width: 22ch; }
+.mast h1 em { font-style: normal; color: #FF7A8A; }
+.mast .lede { color: #C9D3EA; max-width: 62ch; font-size: 16px; }
+.stamp { display: inline-flex; gap: 8px; align-items: center; font-family: var(--f-mono); font-size: 12px; color: #F4F7FB; border: 1px solid rgba(255,255,255,.25); border-radius: 4px; padding: 4px 10px; width: fit-content; }
+.stamp b { color: #FFC24D; font-weight: 600; }
+
+/* ---------- context band (real public data) ---------- */
+.context { background: var(--context-bg); color: var(--context-ink); border-top: 1px solid rgba(255,255,255,.08); padding-block: 22px 26px; }
+.context .label { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--context-muted); margin-bottom: 14px; }
+.ctx-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+.ctx { padding: 4px 18px 4px 0; border-right: 1px solid rgba(255,255,255,.12); margin-right: 18px; min-width: 0; }
+.ctx:last-child { border-right: 0; margin-right: 0; }
+.ctx .v { font-family: var(--f-display); font-size: clamp(24px, 3vw, 32px); font-weight: 600; line-height: 1.1; }
+.ctx .v small { font-size: .55em; font-weight: 500; color: var(--context-muted); margin-left: 4px; }
+.ctx .d { font-size: 13px; color: #C9D3EA; margin-top: 4px; }
+.ctx .s { font-size: 11.5px; color: var(--context-muted); margin-top: 6px; }
+.ctx .s a { color: var(--context-muted); }
+
+/* ---------- sticky control bar ---------- */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+.bar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; flex-wrap: wrap; }
+.chap-nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+.chap-nav a { font-size: 13px; color: var(--ink-2); text-decoration: none; padding: 4px 10px; border-radius: 4px; white-space: nowrap; }
+.chap-nav a:hover { background: var(--line); color: var(--ink); }
+.seg { display: inline-flex; border: 1px solid var(--axis); border-radius: 6px; overflow: hidden; flex: none; }
+.seg button { font: 500 13px var(--f-body); background: transparent; color: var(--ink-2); border: 0; padding: 5px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--axis); }
+.seg button[aria-pressed="true"] { background: var(--navy); color: #fff; }
+:root[data-theme="dark"] .seg button[aria-pressed="true"] { background: var(--signal); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-pressed="true"] { background: var(--signal); } }
+.ctl-label { font-size: 12px; color: var(--muted); margin-right: 8px; }
+
+/* ---------- KPI row ---------- */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding-block: 24px 8px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; min-width: 0; }
+.kpi .k { font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
+.kpi .k i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; flex: none; }
+.kpi .v { font-family: var(--f-display); font-size: 30px; font-weight: 600; line-height: 1.2; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.kpi .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.delta { font-family: var(--f-mono); font-size: 12px; padding: 1px 6px; border-radius: 3px; margin-right: 4px; }
+.delta.bad { color: var(--high); background: var(--high-wash); }
+.delta.good { color: var(--safe); background: var(--safe-wash); }
+.delta.neu { color: var(--ink-2); background: var(--line); }
+
+/* ---------- chapters ---------- */
+.chapter { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 28px 40px; padding-block: 44px; border-top: 1px solid var(--line); }
+.chapter:first-of-type { border-top: 0; }
+.story { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.story .no { font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: .06em; }
+.story h2 { font-size: clamp(22px, 2.6vw, 28px); font-weight: 600; }
+.story p { color: var(--ink-2); max-width: 46ch; }
+.story .callout { border-left: 3px solid var(--high); padding: 2px 0 2px 12px; color: var(--ink); font-weight: 500; }
+.story .callout.good { border-left-color: var(--safe); }
+.story .so { font-size: 13.5px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; color: var(--ink-2); }
+.story .so b { color: var(--ink); font-family: var(--f-display); font-weight: 600; }
+.evidence { display: grid; gap: 16px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 16px 12px; min-width: 0; }
+.panel h3 { font-size: 15px; font-weight: 600; }
+.panel .cap { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.chart { width: 100%; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { font-family: var(--f-body); fill: var(--muted); font-size: 11px; }
+.chart text.lab { fill: var(--ink-2); font-size: 12px; }
+.chart text.val { fill: var(--ink); font-family: var(--f-mono); font-size: 11.5px; font-weight: 500; }
+.chart text.strong { fill: var(--ink); font-weight: 600; }
+.chart .gridl { stroke: var(--grid); stroke-width: 1; }
+.chart .base { stroke: var(--axis); stroke-width: 1; }
+.chart .hit { fill: transparent; cursor: crosshair; }
+
+/* table */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--axis); white-space: nowrap; }
+td { padding: 7px 8px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+td.r, th.r { text-align: right; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--high-wash); color: var(--high); white-space: nowrap; }
+.pill.vc::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.minibar { height: 6px; border-radius: 3px; background: var(--high); opacity: .85; }
+
+/* impact */
+.impact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.big { font-family: var(--f-display); font-size: clamp(34px, 5vw, 52px); font-weight: 700; line-height: 1.05; color: var(--safe); font-variant-numeric: tabular-nums; }
+.formula { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-2); background: var(--bg); border-radius: 6px; padding: 10px 12px; line-height: 1.7; overflow-x: auto; }
+input[type=range] { width: 100%; accent-color: var(--signal); }
+.slider-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-2); }
+
+/* actions */
+.actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.act { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.act .who { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; color: var(--ink-2); }
+.act .who i { width: 10px; height: 10px; border-radius: 2px; }
+.act h3 { font-size: 16px; font-weight: 600; }
+.act ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; display: grid; gap: 4px; }
+
+/* footer */
+.foot { border-top: 1px solid var(--line); padding-block: 28px 48px; color: var(--ink-2); font-size: 13px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; }
+.foot h3 { font-size: 14px; color: var(--ink); margin-bottom: 8px; }
+.foot ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+.foot code { font-family: var(--f-mono); font-size: 12px; background: var(--surface); border: 1px solid var(--line); padding: 0 4px; border-radius: 3px; }
+
+/* tooltip */
+.tip { position: fixed; z-index: 50; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12.5px; line-height: 1.5; padding: 8px 10px; border-radius: 6px; max-width: 260px; box-shadow: 0 6px 18px rgba(0,0,0,.18); opacity: 0; transition: opacity .08s; }
+.tip b { font-family: var(--f-display); font-weight: 600; }
+.tip .row { display: flex; justify-content: space-between; gap: 14px; font-family: var(--f-mono); font-size: 12px; }
+.tip .row span:first-child { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-body); }
+.tip i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+
+details.data { margin-top: 4px; font-size: 12.5px; color: var(--muted); }
+details.data summary { cursor: pointer; }
+details.data[open] summary { margin-bottom: 6px; }
+
+@media (max-width: 900px) {
+  .chapter { grid-template-columns: minmax(0, 1fr); padding-block: 32px; }
+  .story p { max-width: none; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ctx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 18px; }
+  .ctx:nth-child(2) { border-right: 0; margin-right: 0; }
+  .actions { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .two, .impact, .foot { grid-template-columns: minmax(0, 1fr); }
+  .chap-nav { display: none; }
+  .kpi .v { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <div class="brandline">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z" fill="#1E6BFF"/><path d="M8 12h1.2M10.6 9.5v5M13 8v8M15.4 10v4" stroke="#19D3B0" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span>VoiceGuard AI</span><span class="sep">/</span><span>Fraud Intelligence</span><span class="sep">/</span><span>ไตรมาส 2–3 ปี 2026</span>
+    </div>
+    <h1>มิจฉาชีพโทรมาบ่อยขึ้น และสายอันตรายครึ่งหนึ่งที่เราตรวจเสียงคือ<em>เสียง AI</em></h1>
+    <p class="lede">รายงานสำหรับพันธมิตรธนาคาร ผู้ให้บริการโทรคมนาคม และหน่วยงานรัฐ สรุปสิ่งที่ระบบ VoiceGuard ตรวจพบตลอด 6 เดือน (1 เม.ย. – 30 ก.ย. 2026) และสิ่งที่แต่ละฝ่ายควรทำต่อ</p>
+    <span class="stamp">ข้อมูลจำลอง <b>SIMULATED</b> ตามโครงสร้างฐานข้อมูลจริงของระบบ · ตัวเลขบริบทด้านล่างเป็นสถิติจริง</span>
+  </div>
+</header>
+
+<section class="context" aria-label="บริบทจากสถิติจริงของประเทศไทย">
+  <div class="wrap">
+    <div class="label">บริบท: ภัยมิจฉาชีพในประเทศไทย (สถิติจริงจากแหล่งสาธารณะ)</div>
+    <div class="ctx-grid">
+      <div class="ctx"><div class="v">115.3<small>พันล้านบาท</small></div><div class="d">ความเสียหายจากมิจฉาชีพทั้งปี 2025</div><div class="s"><a href="https://www.thaiexaminer.com/thai-news-foreigners/2026/03/19/scam-threat-again-on-the-rise-in-thailand-with-losses-of-70-million-baht-a-day-being-reported-by-police/" target="_blank" rel="noopener">Thai Examiner, มี.ค. 2026</a></div></div>
+      <div class="ctx"><div class="v">39<small>ล้านสาย</small></div><div class="d">สายโทรหลอกลวงในปี 2025 (SMS อีก 134 ล้านข้อความ)</div><div class="s"><a href="https://www.thaiexaminer.com/thai-news-foreigners/2026/03/19/scam-threat-again-on-the-rise-in-thailand-with-losses-of-70-million-baht-a-day-being-reported-by-police/" target="_blank" rel="noopener">Thai Examiner, มี.ค. 2026</a></div></div>
+      <div class="ctx"><div class="v">960<small>คดี/วัน</small></div><div class="d">แจ้งความออนไลน์เฉลี่ยต่อวัน เม.ย. 2568 เสียหาย 55 ล้านบาท/วัน</div><div class="s"><a href="https://www.thaipbs.or.th/verify/article/content/2683" target="_blank" rel="noopener">Thai PBS Verify อ้างอิง thaipoliceonline</a></div></div>
+      <div class="ctx"><div class="v">12,956<small>บาท</small></div><div class="d">ความเสียหายเฉลี่ยต่อเหยื่อ 1 ราย (ใช้คำนวณในบทที่ 6)</div><div class="s"><a href="https://www.nationthailand.com/news/general/40058129" target="_blank" rel="noopener">GASA ผ่าน Nation Thailand</a></div></div>
+    </div>
+  </div>
+</section>
+
+<nav class="bar" aria-label="ส่วนควบคุม">
+  <div class="wrap">
+    <div class="chap-nav">
+      <a href="#ch1">1 ปริมาณ</a><a href="#ch2">2 เสียง AI</a><a href="#ch3">3 เวลาเสี่ยง</a><a href="#ch4">4 เบอร์ซ้ำ</a><a href="#ch5">5 พันธมิตร</a><a href="#ch6">6 มูลค่า</a><a href="#ch7">7 สิ่งที่ต้องทำ</a>
+    </div>
+    <div><span class="ctl-label">ช่วงเวลา</span><div class="seg" role="group" aria-label="ช่วงเวลา" id="range">
+      <button type="button" id="r-all" data-range="all" aria-pressed="true">6 เดือน</button>
+      <button type="button" id="r-90" data-range="90" aria-pressed="false">90 วัน</button>
+      <button type="button" id="r-30" data-range="30" aria-pressed="false">30 วัน</button>
+    </div></div>
+  </div>
+</nav>
+
+<main class="wrap">
+  <div class="kpis" id="kpis" aria-live="polite"></div>
+
+  <!-- 1 -->
+  <section class="chapter" id="ch1">
+    <div class="story">
+      <div class="no">บทที่ 1 / 7 · ปริมาณ</div>
+      <h2>คนตรวจสายมากขึ้น และสายที่ตรวจก็อันตรายขึ้น</h2>
+      <p id="t1a"></p>
+      <p class="callout" id="t1b"></p>
+      <p>แถบสีเทาคือช่วงที่มีคลื่นการหลอกเป็นกลุ่ม: <b>“พัสดุค้างส่ง”</b> กลางเดือนกรกฎาคม และ <b>“เสียงโคลนคนรู้จัก”</b> ปลายสิงหาคมถึงต้นกันยายน</p>
+    </div>
+    <div class="evidence">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>การตรวจสายรายวัน แยกตามระดับความเสี่ยง</h3><div class="cap">ค่าเฉลี่ยเคลื่อนที่ 7 วัน · ชี้บนกราฟเพื่อดูรายวัน</div></div>
+          <div class="legend"><span><i style="background:var(--safe)"></i>ปลอดภัย</span><span><i style="background:var(--suspect)"></i>น่าสงสัย</span><span><i style="background:var(--high)"></i>เสี่ยงสูง</span></div>
+        </div>
+        <div class="chart" id="c-daily"></div>
+        <details class="data"><summary>ดูเป็นตาราง (รายเดือน)</summary><div class="tbl-wrap" id="tb-monthly"></div></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="chapter" id="ch2">
+    <div class="story">
+      <div class="no">บทที่ 2 / 7 · เสียงสังเคราะห์</div>
+      <h2>เสียงที่คุณได้ยิน อาจไม่ใช่คนจริง</h2>
+      <p id="t2a"></p>
+      <p class="callout" id="t2b"></p>
+      <p class="so"><b>หมายความว่า</b> การตรวจเฉพาะ “เบอร์” ไม่พออีกต่อไป เบอร์ใหม่ที่ยังไม่มีใครแจ้งจะผ่านไปได้ ต้องวิเคราะห์ “เสียง” ควบคู่เสมอ</p>
+    </div>
+    <div class="evidence">
+      <div class="two">
+        <div class="panel">
+          <h3>สัดส่วนเสียง AI ในสายเสี่ยงสูง</h3>
+          <div class="cap">เฉพาะสายที่ส่งไฟล์เสียงให้วิเคราะห์</div>
+          <div class="chart" id="c-syn"></div>
+        </div>
+        <div class="panel">
+          <h3>อันดับรูปแบบการหลอก เม.ย. → ก.ย.</h3>
+          <div class="cap">นับจากการแจ้งเบาะแส (reports × scam_categories)</div>
+          <div class="chart" id="c-slope"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="chapter" id="ch3">
+    <div class="story">
+      <div class="no">บทที่ 3 / 7 · เวลาเสี่ยง</div>
+      <h2>มิจฉาชีพทำงานตามเวลาราชการ</h2>
+      <p id="t3a"></p>
+      <p class="callout" id="t3b"></p>
+      <p class="so"><b>หมายความว่า</b> ช่วงเวลานี้คือเวลาที่ผู้สูงอายุอยู่บ้านคนเดียวและลูกหลานอยู่ที่ทำงาน ควรเพิ่มการแจ้งเตือนถึงผู้ติดต่อฉุกเฉินในช่วงดังกล่าว</p>
+    </div>
+    <div class="evidence">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>สายเสี่ยงสูง แยกตามวันและชั่วโมง</h3><div class="cap">รวม 6 เดือน · สีเข้ม = สายมาก</div></div>
+          <div class="legend" id="heat-legend"></div>
+        </div>
+        <div class="chart" id="c-heat"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="chapter" id="ch4">
+    <div class="story">
+      <div class="no">บทที่ 4 / 7 · เบอร์ซ้ำ</div>
+      <h2>เบอร์เพียง 10% ก่อเหตุกว่าครึ่ง</h2>
+      <p id="t4a"></p>
+      <p class="callout good" id="t4b"></p>
+      <p id="t4c"></p>
+    </div>
+    <div class="evidence">
+      <div class="two">
+        <div class="panel">
+          <h3>สัดส่วนสายเสี่ยงสูงสะสม</h3>
+          <div class="cap">เรียงเบอร์จากก่อเหตุมากไปน้อย</div>
+          <div class="chart" id="c-pareto"></div>
+        </div>
+        <div class="panel">
+          <h3>ประเภทเบอร์ที่ใช้โทร</h3>
+          <div class="cap">จำนวนสายเสี่ยงสูงตามเลขขึ้นต้น</div>
+          <div class="chart" id="c-prefix"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h3>10 เบอร์ที่ก่อเหตุมากที่สุด</h3><div class="cap">ปิดเลขกลางตามแนวปฏิบัติ PDPA</div></div></div>
+        <div class="tbl-wrap" id="tb-top"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="chapter" id="ch5">
+    <div class="story">
+      <div class="no">บทที่ 5 / 7 · เครือข่ายพันธมิตร</div>
+      <h2>ยิ่งมีคนช่วยแจ้ง ยิ่งปิดเบอร์ได้เร็ว</h2>
+      <p id="t5a"></p>
+      <p class="callout good" id="t5b"></p>
+      <p class="so"><b>หมายความว่า</b> ทุกชั่วโมงที่เร็วขึ้นคือสายที่ไม่ต้องหลุดไปถึงเหยื่อ การแจ้งเบาะแสจากพันธมิตรคือสินทรัพย์ที่สำคัญที่สุดของระบบ</p>
+    </div>
+    <div class="evidence">
+      <div class="two">
+        <div class="panel">
+          <h3>เวลาจากสายแรกถึงขึ้น Blacklist</h3>
+          <div class="cap">ค่ามัธยฐาน (ชั่วโมง) ตามเดือนที่เห็นเบอร์ครั้งแรก</div>
+          <div class="chart" id="c-lag"></div>
+        </div>
+        <div class="panel">
+          <h3>การแจ้งเบาะแสรายเดือน</h3>
+          <div class="legend" style="margin-top:4px"><span><i style="background:var(--bank)"></i>ธนาคาร</span><span><i style="background:var(--telco)"></i>Telco</span><span><i style="background:var(--gov)"></i>หน่วยงานรัฐ</span><span><i style="background:var(--anon)"></i>ไม่ระบุ</span></div>
+          <div class="chart" id="c-partner"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="chapter" id="ch6">
+    <div class="story">
+      <div class="no">บทที่ 6 / 7 · มูลค่า</div>
+      <h2>เงินที่ไม่ต้องสูญเสีย</h2>
+      <p>เราไม่รู้แน่ว่าสายเสี่ยงสูงกี่สายจะทำให้มีคนโอนเงินจริง จึงให้ผู้อ่านปรับสมมติฐานเองได้ ค่าเริ่มต้นคือ 2% คูณกับค่าเสียหายเฉลี่ยต่อเหยื่อจากรายงาน GASA</p>
+      <p class="so"><b>อ่านอย่างระมัดระวัง</b> ตัวเลขนี้เป็นการประมาณการเพื่อเล่าเรื่อง ไม่ใช่ความเสียหายที่ป้องกันได้จริง ต้องเก็บข้อมูลผลลัพธ์หลังเตือน (outcome) ก่อนจึงจะวัดได้</p>
+    </div>
+    <div class="evidence">
+      <div class="impact">
+        <div class="panel" style="display:grid;gap:12px;align-content:start">
+          <div class="cap" id="imp-range"></div>
+          <div class="big" id="imp-big"></div>
+          <div style="color:var(--ink-2);font-size:14px" id="imp-sub"></div>
+          <div>
+            <div class="slider-row"><label for="conv">สมมติ: สายเสี่ยงสูงที่จะกลายเป็นเหยื่อ</label><b class="mono" id="conv-v"></b></div>
+            <input type="range" id="conv" min="0.5" max="5" step="0.5" value="2">
+          </div>
+          <div class="formula" id="imp-formula"></div>
+        </div>
+        <div class="panel">
+          <h3>มูลค่าประมาณการรายเดือน</h3>
+          <div class="cap">ล้านบาท ตามสมมติฐานที่เลือก</div>
+          <div class="chart" id="c-impact"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="chapter" id="ch7" style="grid-template-columns:minmax(0,1fr)">
+    <div class="story">
+      <div class="no">บทที่ 7 / 7 · สิ่งที่ต้องทำ</div>
+      <h2>ข้อเสนอสำหรับไตรมาสถัดไป</h2>
+    </div>
+    <div class="actions">
+      <div class="act"><div class="who"><i style="background:var(--bank)"></i>ธนาคาร</div><h3>หน่วงการโอนเมื่อมีสายเสี่ยงสูงก่อนหน้า</h3>
+        <ul><li>เชื่อม API <span class="mono">/detect/number</span> กับระบบโอนเงิน หากลูกค้าเพิ่งรับสายเสี่ยงสูงใน 30 นาที ให้ยืนยันอีกชั้น</li><li>ให้ความสำคัญกับลูกค้าสูงอายุช่วง 09–16 น. วันทำการ</li></ul></div>
+      <div class="act"><div class="who"><i style="background:var(--telco)"></i>Telco</div><h3>ระงับเบอร์กลุ่มหัวแถวให้เร็วขึ้น</h3>
+        <ul><li>เบอร์ 10% แรกก่อเหตุราวครึ่งหนึ่ง ระงับกลุ่มนี้ได้ผลคุ้มที่สุด</li><li>ติดป้าย “เบอร์บ้านปลอม” สำหรับสายขึ้นต้น 02 ที่แสดงชื่อองค์กร</li></ul></div>
+      <div class="act"><div class="who"><i style="background:var(--gov)"></i>หน่วยงานรัฐ</div><h3>สื่อสารเรื่องเสียงโคลนเป็นเรื่องหลัก</h3>
+        <ul><li>รูปแบบ “เสียงคนรู้จัก” ขึ้นเป็นอันดับ 1 แล้ว ควรเปลี่ยนข้อความรณรงค์จาก “ตำรวจปลอม” เป็น “โทรกลับเบอร์เดิมก่อนโอน”</li><li>เก็บข้อมูลผลลัพธ์หลังเตือน เพื่อวัดมูลค่าที่ป้องกันได้จริง</li></ul></div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div>
+      <h3>ข้อมูลที่ใช้</h3>
+      <p style="margin-bottom:8px">ข้อมูลในบทที่ 1–6 เป็นข้อมูลจำลอง (seed คงที่ รันซ้ำได้ผลเดิม) ที่สร้างตามโครงสร้างตารางจริงของ VoiceGuard ทุกคอลัมน์ จึงโหลดเข้า PostgreSQL ของระบบได้ทันที</p>
+      <ul>
+        <li><code>call_logs</code> <span id="f-calls"></span> แถว · <code>blacklist_numbers</code> <span id="f-bl"></span> · <code>reports</code> <span id="f-rep"></span></li>
+        <li><code>report_categories</code> (M-N) · <code>scam_categories</code> 8 · <code>users</code> <span id="f-users"></span> บัญชีพันธมิตร</li>
+        <li>ไฟล์: <code>dashboard/data/raw/*.csv</code>, ตารางสรุป <code>dashboard/data/aggregated/*.csv</code>, SQL ที่ให้ผลเดียวกัน <code>dashboard/sql/queries.sql</code></li>
+      </ul>
+    </div>
+    <div>
+      <h3>แหล่งอ้างอิงสถิติจริง</h3>
+      <ul>
+        <li><a href="https://www.thaiexaminer.com/thai-news-foreigners/2026/03/19/scam-threat-again-on-the-rise-in-thailand-with-losses-of-70-million-baht-a-day-being-reported-by-police/" target="_blank" rel="noopener">Thai Examiner (19 มี.ค. 2026): ความเสียหาย 2025 และจำนวนสาย/SMS</a></li>
+        <li><a href="https://www.thaipbs.or.th/verify/article/content/2683" target="_blank" rel="noopener">Thai PBS Verify: สถิติ thaipoliceonline เม.ย. 2568</a></li>
+        <li><a href="https://www.nationthailand.com/news/general/40058129" target="_blank" rel="noopener">Nation Thailand: รายงาน GASA ค่าเสียหายเฉลี่ยต่อคน</a></li>
+      </ul>
+      <p style="margin-top:10px">VoiceGuard AI · Hear the truth. Stay protected. · โครงงาน BUU</p>
+    </div>
+  </footer>
+</main>
+<div class="tip" id="tip" role="status"></div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const TH_MONTH = { "01": "ม.ค.", "02": "ก.พ.", "03": "มี.ค.", "04": "เม.ย.", "05": "พ.ค.", "06": "มิ.ย.", "07": "ก.ค.", "08": "ส.ค.", "09": "ก.ย.", "10": "ต.ค.", "11": "พ.ย.", "12": "ธ.ค." };
+const TH_DAY = ["จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา."];
+const TH_DAY_FULL = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์"];
+const fmt = n => Math.round(n).toLocaleString("en-US");
+const fmt1 = n => (Math.round(n * 10) / 10).toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const mLabel = m => TH_MONTH[m.slice(5, 7)];
+const dLabel = d => `${+d.slice(8, 10)} ${TH_MONTH[d.slice(5, 7)]}`;
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+function s(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, str, attrs = {}) { const t = s("text", { x, y, ...attrs }, parent); t.textContent = str; return t; }
+function niceMax(v) { const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
+function svgFor(el, w, h) { el.innerHTML = ""; return s("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" }, el); }
+
+/* ---------- tooltip ---------- */
+const tip = $("tip");
+function showTip(html, ev) {
+  tip.innerHTML = html; tip.style.opacity = 1;
+  const r = tip.getBoundingClientRect();
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - 14;
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+}
+function hideTip() { tip.style.opacity = 0; }
+const row = (color, label, val) => `<div class="row"><span>${color ? `<i style="background:${color}"></i>` : ""}${label}</span><span>${val}</span></div>`;
+
+/* ---------- state ---------- */
+let RANGE = "all";
+const daily = DATA.daily;
+function rangeDays() {
+  if (RANGE === "all") return daily;
+  return daily.slice(-Number(RANGE));
+}
+function prevDays() {
+  if (RANGE === "all") return null;
+  const n = Number(RANGE);
+  return daily.slice(-2 * n, -n);
+}
+const sum = (rows, k) => rows.reduce((a, r) => a + r[k], 0);
+const rangeLabel = () => { const r = rangeDays(); return `${dLabel(r[0].date)} – ${dLabel(r[r.length - 1].date)} 2026`; };
+
+/* ---------- KPI ---------- */
+function deltaHtml(cur, prev, upIsBad = true, isPct = false) {
+  if (prev == null) return "";
+  const d = isPct ? cur - prev : (prev ? (cur - prev) / prev * 100 : 0);
+  const cls = Math.abs(d) < 0.5 ? "neu" : ((d > 0) === upIsBad ? "bad" : "good");
+  const sign = d > 0 ? "+" : d < 0 ? "−" : "±";
+  return `<span class="delta ${cls}">${sign}${fmt1(Math.abs(d))}${isPct ? " จุด" : "%"}</span>`;
+}
+function renderKpis() {
+  const r = rangeDays(), p = prevDays();
+  const tot = sum(r, "total"), hi = sum(r, "high_risk"), syn = sum(r, "synthetic"), sus = sum(r, "suspect");
+  const pt = p && sum(p, "total"), ph = p && sum(p, "high_risk"), ps = p && sum(p, "synthetic");
+  const vs = p ? `เทียบ ${p.length} วันก่อนหน้า` : "1 เม.ย. – 30 ก.ย. 2026";
+  $("kpis").innerHTML = [
+    ["var(--signal)", "การตรวจทั้งหมด", fmt(tot), `${deltaHtml(tot, pt, false)}${vs}`],
+    ["var(--high)", "สายเสี่ยงสูง (คะแนน ≥ 80)", fmt(hi), `${deltaHtml(hi / tot * 100, p ? ph / pt * 100 : null, true, true)}${fmt1(hi / tot * 100)}% ของการตรวจ`],
+    ["var(--suspect)", "สายน่าสงสัย (50–79)", fmt(sus), `${fmt1(sus / tot * 100)}% ของการตรวจ`],
+    ["var(--high)", "ตรวจพบเสียงสังเคราะห์", fmt(syn), `${deltaHtml(syn, ps, true)}${p ? vs : "เฉลี่ย " + fmt(syn / r.length) + " สาย/วัน"}`],
+  ].map(([c, k, v, sub]) => `<div class="kpi"><div class="k"><i style="background:${c}"></i>${k}</div><div class="v">${v}</div><div class="sub">${sub}</div></div>`).join("");
+}
+
+/* ---------- 1. daily stacked area ---------- */
+function rolling(rows, k, w = 7) {
+  return rows.map((_, i) => { const a = rows.slice(Math.max(0, i - w + 1), i + 1); return a.reduce((x, r) => x + r[k], 0) / a.length; });
+}
+const WAVES = [{ from: "2026-07-10", to: "2026-07-28", label: "คลื่นพัสดุ" }, { from: "2026-08-24", to: "2026-09-13", label: "คลื่นเสียงโคลน" }];
+function renderDaily() {
+  const el = $("c-daily"), W = Math.max(320, el.clientWidth), H = W < 520 ? 260 : 320;
+  const m = { l: 44, r: 12, t: 22, b: 28 };
+  const all = daily, startIdx = all.length - rangeDays().length;
+  // rolling over full series, then slice, so the first days of a range are not distorted
+  const S = { safe: rolling(all, "safe"), suspect: rolling(all, "suspect"), high_risk: rolling(all, "high_risk") };
+  const rows = all.slice(startIdx).map((d, i) => ({ date: d.date, raw: d, safe: S.safe[startIdx + i], suspect: S.suspect[startIdx + i], high: S.high_risk[startIdx + i] }));
+  const ymax = niceMax(Math.max(...rows.map(r => r.safe + r.suspect + r.high)));
+  const svg = svgFor(el, W, H);
+  const x = i => m.l + (W - m.l - m.r) * (rows.length === 1 ? 0 : i / (rows.length - 1));
+  const y = v => H - m.b - (H - m.t - m.b) * v / ymax;
+  // waves
+  WAVES.forEach(wv => {
+    const i0 = rows.findIndex(r => r.date >= wv.from), i1 = rows.findIndex(r => r.date > wv.to);
+    if (i0 < 0) return;
+    const xe = i1 < 0 ? x(rows.length - 1) : x(i1);
+    s("rect", { x: x(i0), y: m.t, width: Math.max(0, xe - x(i0)), height: H - m.t - m.b, fill: "var(--line)" }, svg);
+    const nearEnd = x(i0) + 90 > W - m.r;
+    txt(svg, nearEnd ? xe : x(i0) + 4, m.t - 6, wv.label, { class: "lab", "font-size": 11, "text-anchor": nearEnd ? "end" : "start" });
+  });
+  for (let i = 0; i <= 4; i++) {
+    const v = ymax * i / 4;
+    s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: i ? "gridl" : "base" }, svg);
+    txt(svg, m.l - 6, y(v) + 4, fmt(v), { "text-anchor": "end" });
+  }
+  const layers = [["safe", "var(--safe)", r => 0, r => r.safe], ["suspect", "var(--suspect)", r => r.safe, r => r.safe + r.suspect], ["high", "var(--high)", r => r.safe + r.suspect, r => r.safe + r.suspect + r.high]];
+  layers.forEach(([k, c, lo, hi]) => {
+    let d = rows.map((r, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(hi(r)).toFixed(1)}`).join("");
+    d += rows.slice().reverse().map((r, j) => `L${x(rows.length - 1 - j).toFixed(1)},${y(lo(r)).toFixed(1)}`).join("") + "Z";
+    s("path", { d, fill: c, "fill-opacity": 0.9, stroke: "var(--surface)", "stroke-width": 1.5, "stroke-linejoin": "round" }, svg);
+  });
+  // month ticks
+  rows.forEach((r, i) => {
+    if (r.date.endsWith("-01") || (i === 0 && rows.length < 60)) {
+      txt(svg, x(i), H - m.b + 16, i === 0 && !r.date.endsWith("-01") ? dLabel(r.date) : mLabel(r.date), { "text-anchor": i === 0 ? "start" : "middle" });
+      s("line", { x1: x(i), x2: x(i), y1: H - m.b, y2: H - m.b + 4, class: "base" }, svg);
+    }
+  });
+  if (rows.length < 60) rows.forEach((r, i) => { if (i % 7 === 0 && i && !r.date.endsWith("-01")) txt(svg, x(i), H - m.b + 16, dLabel(r.date), { "text-anchor": "middle" }); });
+  // end label for high risk share
+  const last = rows[rows.length - 1];
+  const share = last.high / (last.safe + last.suspect + last.high) * 100;
+  // crosshair
+  const cross = s("line", { y1: m.t, y2: H - m.b, stroke: "var(--ink)", "stroke-width": 1, opacity: 0 }, svg);
+  const dot = s("circle", { r: 4.5, fill: "var(--high)", stroke: "var(--surface)", "stroke-width": 2, opacity: 0 }, svg);
+  const hit = s("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, class: "hit" }, svg);
+  const move = ev => {
+    const pt = svg.getBoundingClientRect(); const sx = (ev.clientX - pt.left) * W / pt.width;
+    const i = Math.max(0, Math.min(rows.length - 1, Math.round((sx - m.l) / (W - m.l - m.r) * (rows.length - 1))));
+    const r = rows[i], d = r.raw;
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("opacity", .35);
+    dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(r.safe + r.suspect + r.high)); dot.setAttribute("opacity", 1);
+    const wave = WAVES.find(w => r.date >= w.from && r.date <= w.to);
+    showTip(`<b>${TH_DAY_FULL[(new Date(r.date + "T00:00:00").getDay() + 6) % 7]} ${dLabel(r.date)} 2026</b>${wave ? ` · ${wave.label}` : ""}
+      ${row("", "ตรวจทั้งหมด", fmt(d.total))}${row("var(--high)", "เสี่ยงสูง", fmt(d.high_risk))}${row("var(--suspect)", "น่าสงสัย", fmt(d.suspect))}${row("var(--safe)", "ปลอดภัย", fmt(d.safe))}${row("", "เสียงสังเคราะห์", fmt(d.synthetic))}
+      <div style="opacity:.7;margin-top:4px;font-size:11.5px">ค่าบนกราฟ = เฉลี่ย 7 วัน</div>`, ev);
+  };
+  hit.addEventListener("pointermove", move); hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", () => { cross.setAttribute("opacity", 0); dot.setAttribute("opacity", 0); hideTip(); });
+}
+function renderMonthlyTable() {
+  $("tb-monthly").innerHTML = `<table><thead><tr><th>เดือน</th><th class="r">ตรวจ</th><th class="r">เสี่ยงสูง</th><th class="r">%</th><th class="r">น่าสงสัย</th><th class="r">เสียง AI</th></tr></thead><tbody>${DATA.monthly.map(m => `<tr><td>${mLabel(m.month)} 2026</td><td class="r num">${fmt(m.total_checks)}</td><td class="r num">${fmt(m.high_risk)}</td><td class="r num">${fmt1(m.high_risk_pct)}</td><td class="r num">${fmt(m.suspect)}</td><td class="r num">${fmt(m.synthetic_calls)}</td></tr>`).join("")}</tbody></table>`;
+}
+function storyCh1() {
+  const M = DATA.monthly, a = M[0], b = M[M.length - 1];
+  const per = m => m.total_checks / (m.month.endsWith("04") || m.month.endsWith("06") || m.month.endsWith("09") ? 30 : 31);
+  $("t1a").textContent = `ในเดือนเมษายน ระบบตรวจสายเฉลี่ย ${fmt(per(a))} สายต่อวัน พอถึงกันยายนเพิ่มเป็น ${fmt(per(b))} สายต่อวัน หรือ ${fmt1(per(b) / per(a))} เท่า เพราะมีพันธมิตรและผู้ใช้เข้ามาเพิ่ม`;
+  $("t1b").textContent = `แต่สิ่งที่น่ากังวลกว่าคือสัดส่วนสายเสี่ยงสูงขยับจาก ${fmt1(a.high_risk_pct)}% เป็น ${fmt1(b.high_risk_pct)}% ทุก ๆ 4 สายที่ตรวจ จะมีมากกว่า 1 สายที่เป็นมิจฉาชีพ`;
+}
+
+/* ---------- 2a. synthetic share columns ---------- */
+function renderSyn() {
+  const el = $("c-syn"), W = Math.max(260, el.clientWidth), H = 240, m = { l: 34, r: 8, t: 22, b: 26 };
+  const rows = DATA.monthly, svg = svgFor(el, W, H), ymax = 60;
+  const bw = Math.min(24, (W - m.l - m.r) / rows.length * 0.55);
+  const x = i => m.l + (W - m.l - m.r) * (i + 0.5) / rows.length;
+  const y = v => H - m.b - (H - m.t - m.b) * v / ymax;
+  [0, 20, 40, 60].forEach(v => { s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: v ? "gridl" : "base" }, svg); txt(svg, m.l - 6, y(v) + 4, v + "%", { "text-anchor": "end" }); });
+  rows.forEach((r, i) => {
+    const v = r.synthetic_pct_of_audio_high_risk, x0 = x(i) - bw / 2, y0 = y(v), h = H - m.b - y0, rr = Math.min(4, h);
+    s("path", { d: `M${x0},${H - m.b}V${y0 + rr}Q${x0},${y0} ${x0 + rr},${y0}H${x0 + bw - rr}Q${x0 + bw},${y0} ${x0 + bw},${y0 + rr}V${H - m.b}Z`, fill: "var(--high)", opacity: i === rows.length - 1 ? 1 : 0.55 }, svg);
+    if (i === 0 || i === rows.length - 1) txt(svg, x(i), y0 - 6, fmt1(v) + "%", { class: "val", "text-anchor": "middle" });
+    txt(svg, x(i), H - m.b + 16, mLabel(r.month), { "text-anchor": "middle" });
+    const hit = s("rect", { x: x(i) - (W - m.l - m.r) / rows.length / 2, y: m.t, width: (W - m.l - m.r) / rows.length, height: H - m.t - m.b, class: "hit" }, svg);
+    hit.addEventListener("pointermove", ev => showTip(`<b>${mLabel(r.month)} 2026</b>${row("var(--high)", "เสียง AI ในสายเสี่ยงสูง", fmt1(v) + "%")}${row("", "สายเสียง AI ทั้งหมด", fmt(r.synthetic_calls))}`, ev));
+    hit.addEventListener("pointerleave", hideTip);
+  });
+}
+/* ---------- 2b. slope chart of category ranks ---------- */
+function renderSlope() {
+  const el = $("c-slope"), W = Math.max(260, el.clientWidth), H = 240;
+  const months = [...new Set(DATA.categories.map(c => c.month))], m0 = months[0], m1 = months[months.length - 1];
+  const get = mm => DATA.categories.filter(c => c.month === mm).sort((a, b) => b.reports - a.reports);
+  const A = get(m0), B = get(m1);
+  const rankA = Object.fromEntries(A.map((c, i) => [c.category_code, i])), rankB = Object.fromEntries(B.map((c, i) => [c.category_code, i]));
+  const svg = svgFor(el, W, H), pad = 22, lx = W * 0.40, rx = W * 0.60, top = 26, step = (H - top - 10) / A.length;
+  const y = i => top + step * i + step / 2;
+  txt(svg, lx, 12, mLabel(m0), { "text-anchor": "end", class: "lab" });
+  txt(svg, rx, 12, mLabel(m1), { "text-anchor": "start", class: "lab" });
+  const short = { impersonate_police: "ตำรวจ/DSI ปลอม", impersonate_bank: "ธนาคารปลอม", parcel: "พัสดุ", investment: "ลงทุน", loan: "เงินกู้", refund: "คืนเงิน/ภาษี", voice_clone: "เสียงโคลน", other: "อื่น ๆ" };
+  A.forEach(c => {
+    const code = c.category_code, hl = code === "voice_clone", col = hl ? "var(--high)" : "var(--axis)";
+    const ya = y(rankA[code]), yb = y(rankB[code]), cb = B[rankB[code]];
+    s("line", { x1: lx + 6, y1: ya, x2: rx - 6, y2: yb, stroke: col, "stroke-width": hl ? 2.5 : 1.5, "stroke-linecap": "round" }, svg);
+    s("circle", { cx: lx + 6, cy: ya, r: 4, fill: col, stroke: "var(--surface)", "stroke-width": 2 }, svg);
+    s("circle", { cx: rx - 6, cy: yb, r: 4, fill: col, stroke: "var(--surface)", "stroke-width": 2 }, svg);
+    txt(svg, lx - 4, ya + 4, `${short[code]} ${c.reports}`, { "text-anchor": "end", class: hl ? "lab strong" : "", "font-size": W < 340 ? 10 : 11 });
+    txt(svg, rx + 4, yb + 4, `${cb.reports} ${short[code]}`, { "text-anchor": "start", class: hl ? "lab strong" : "", "font-size": W < 340 ? 10 : 11 });
+  });
+  return { A, B, rankA, rankB };
+}
+function storyCh2(sl) {
+  const M = DATA.monthly, a = M[0], b = M[M.length - 1];
+  const vcA = sl.A.find(c => c.category_code === "voice_clone"), vcB = sl.B.find(c => c.category_code === "voice_clone");
+  $("t2a").textContent = `ระบบวิเคราะห์ไฟล์เสียงของสายที่ผู้ใช้ส่งเข้ามา ในเดือนเมษายน สายเสี่ยงสูงที่เป็นเสียงสังเคราะห์มี ${fmt1(a.synthetic_pct_of_audio_high_risk)}% แต่ในเดือนกันยายนเพิ่มเป็น ${fmt1(b.synthetic_pct_of_audio_high_risk)}%`;
+  $("t2b").textContent = `รูปแบบ “ใช้เสียงสังเคราะห์เลียนแบบคนรู้จัก” ขยับจากอันดับ ${sl.rankA.voice_clone + 1} ขึ้นเป็นอันดับ ${sl.rankB.voice_clone + 1} โดยมีการแจ้งเพิ่มจาก ${vcA.reports} เป็น ${vcB.reports} ครั้งต่อเดือน (${fmt1(vcB.reports / vcA.reports)} เท่า)`;
+}
+
+/* ---------- 3. heatmap ---------- */
+function renderHeat() {
+  const el = $("c-heat"), W = Math.max(320, el.clientWidth);
+  const narrow = W < 560, m = { l: 34, r: 4, t: 18, b: 6 };
+  const cw = (W - m.l - m.r) / 24, ch = narrow ? 22 : 30, gap = 2, H = m.t + ch * 7 + m.b;
+  const cells = DATA.heatmap, max = Math.max(...cells.map(c => c.high_risk_calls));
+  const steps = ["var(--heat-0)", "var(--heat-1)", "var(--heat-2)", "var(--heat-3)", "var(--heat-4)"];
+  const bucket = v => Math.max(0, Math.min(4, Math.floor(v / max * 5 - 1e-9)));
+  const svg = svgFor(el, W, H);
+  for (let h = 0; h < 24; h += narrow ? 3 : 2) txt(svg, m.l + cw * h + cw / 2, 12, String(h).padStart(2, "0"), { "text-anchor": "middle" });
+  TH_DAY.forEach((d, i) => txt(svg, m.l - 8, m.t + ch * i + ch / 2 + 4, d, { "text-anchor": "end", class: "lab" }));
+  cells.forEach(c => {
+    const r = s("rect", { x: m.l + cw * c.hour + gap / 2, y: m.t + ch * c.weekday + gap / 2, width: cw - gap, height: ch - gap, rx: 3, fill: steps[bucket(c.high_risk_calls)] }, svg);
+    r.addEventListener("pointermove", ev => showTip(`<b>วัน${TH_DAY_FULL[c.weekday]} ${String(c.hour).padStart(2, "0")}:00–${String(c.hour).padStart(2, "0")}:59</b>${row("var(--high)", "สายเสี่ยงสูง", fmt(c.high_risk_calls))}${row("", "เฉลี่ยต่อสัปดาห์", fmt1(c.high_risk_calls / 26))}`, ev));
+    r.addEventListener("pointerleave", hideTip);
+  });
+  $("heat-legend").innerHTML = steps.map((c, i) => `<span><i style="background:${c}"></i>${i === 0 ? "น้อย" : i === 4 ? "มาก" : ""}</span>`).join("");
+}
+function storyCh3() {
+  const c = DATA.heatmap, tot = c.reduce((a, x) => a + x.high_risk_calls, 0);
+  const office = c.filter(x => x.weekday < 5 && x.hour >= 9 && x.hour < 17).reduce((a, x) => a + x.high_risk_calls, 0);
+  const peak = c.reduce((a, x) => x.high_risk_calls > a.high_risk_calls ? x : a);
+  const byHour = Array.from({ length: 24 }, (_, h) => c.filter(x => x.hour === h).reduce((a, x) => a + x.high_risk_calls, 0));
+  const top2 = byHour.map((v, h) => [v, h]).sort((a, b) => b[0] - a[0]).slice(0, 2).map(x => x[1]).sort((a, b) => a - b);
+  const wkend = c.filter(x => x.weekday >= 5).reduce((a, x) => a + x.high_risk_calls, 0);
+  $("t3a").textContent = `สายเสี่ยงสูงกระจุกอยู่ในช่วงเช้าและบ่ายของวันทำงาน ช่วงพีคคือ ${String(top2[0]).padStart(2, "0")}:00 และ ${String(top2[1]).padStart(2, "0")}:00 น. มีช่วงพักเที่ยงที่สายลดลงชัดเจน ส่วนเสาร์–อาทิตย์รวมกันมีเพียง ${fmt1(wkend / tot * 100)}%`;
+  $("t3b").textContent = `${fmt1(office / tot * 100)}% ของสายเสี่ยงสูงเกิดในวันจันทร์–ศุกร์ เวลา 09–17 น. ช่องที่หนักที่สุดคือวัน${TH_DAY_FULL[peak.weekday]} ${String(peak.hour).padStart(2, "0")}:00 น.`;
+}
+
+/* ---------- 4. pareto + prefix + top ---------- */
+function renderPareto() {
+  const el = $("c-pareto"), W = Math.max(260, el.clientWidth), H = 240, m = { l: 36, r: 12, t: 14, b: 28 };
+  const pts = [{ pct_numbers: 0, cum_pct_calls: 0 }, ...DATA.pareto], svg = svgFor(el, W, H);
+  const x = v => m.l + (W - m.l - m.r) * v / 100, y = v => H - m.b - (H - m.t - m.b) * v / 100;
+  [0, 25, 50, 75, 100].forEach(v => { s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: v ? "gridl" : "base" }, svg); txt(svg, m.l - 6, y(v) + 4, v + "%", { "text-anchor": "end" }); });
+  [0, 25, 50, 75, 100].forEach(v => txt(svg, x(v), H - m.b + 16, v + "%", { "text-anchor": v === 0 ? "start" : v === 100 ? "end" : "middle" }));
+  txt(svg, W - m.r, H - m.b - 6, "% ของเบอร์", { "text-anchor": "end" });
+  s("line", { x1: x(0), y1: y(0), x2: x(100), y2: y(100), stroke: "var(--axis)", "stroke-width": 1 }, svg);
+  const d = pts.map((p, i) => `${i ? "L" : "M"}${x(p.pct_numbers).toFixed(1)},${y(p.cum_pct_calls).toFixed(1)}`).join("");
+  s("path", { d: d + `L${x(100)},${y(0)}L${x(0)},${y(0)}Z`, fill: "var(--high)", "fill-opacity": .1 }, svg);
+  s("path", { d, fill: "none", stroke: "var(--high)", "stroke-width": 2, "stroke-linejoin": "round" }, svg);
+  const ten = DATA.pareto.find(p => p.pct_numbers >= 10);
+  s("line", { x1: x(ten.pct_numbers), x2: x(ten.pct_numbers), y1: y(0), y2: y(ten.cum_pct_calls), stroke: "var(--ink-2)", "stroke-dasharray": "0", "stroke-width": 1, opacity: .5 }, svg);
+  s("circle", { cx: x(ten.pct_numbers), cy: y(ten.cum_pct_calls), r: 5, fill: "var(--high)", stroke: "var(--surface)", "stroke-width": 2 }, svg);
+  txt(svg, x(ten.pct_numbers) + 8, y(ten.cum_pct_calls) + 14, `10% แรก = ${fmt1(ten.cum_pct_calls)}% ของสาย`, { class: "val" });
+  const hit = s("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, class: "hit" }, svg);
+  hit.addEventListener("pointermove", ev => {
+    const pt = svg.getBoundingClientRect(), v = ((ev.clientX - pt.left) * W / pt.width - m.l) / (W - m.l - m.r) * 100;
+    const p = DATA.pareto.find(p => p.pct_numbers >= v) || DATA.pareto[DATA.pareto.length - 1];
+    showTip(`<b>เบอร์ ${fmt1(p.pct_numbers)}% แรก</b>${row("", "จำนวนเบอร์", fmt(p.rank))}${row("var(--high)", "ก่อสายเสี่ยงสูง", fmt1(p.cum_pct_calls) + "%")}`, ev);
+  });
+  hit.addEventListener("pointerleave", hideTip);
+}
+function renderPrefix() {
+  const el = $("c-prefix"), W = Math.max(260, el.clientWidth), rows = DATA.prefix, bh = 22, gap = 22, H = rows.length * (bh + gap) + 4;
+  const svg = svgFor(el, W, H), max = Math.max(...rows.map(r => r.high_risk_calls)), tot = rows.reduce((a, r) => a + r.high_risk_calls, 0);
+  const lw = 0, vw = 92, x = v => (W - vw) * v / max;
+  rows.forEach((r, i) => {
+    const y0 = i * (bh + gap) + 16, w = Math.max(2, x(r.high_risk_calls)), spoof = r.prefix.startsWith("02");
+    txt(svg, 0, y0 - 5, r.prefix, { class: "lab" });
+    s("path", { d: `M0,${y0}H${w - 4}Q${w},${y0} ${w},${y0 + 4}V${y0 + bh - 4}Q${w},${y0 + bh} ${w - 4},${y0 + bh}H0Z`, fill: spoof ? "var(--high)" : "var(--axis)" }, svg);
+    txt(svg, w + 6, y0 + bh / 2 + 4, `${fmt(r.high_risk_calls)} · ${fmt1(r.high_risk_calls / tot * 100)}%`, { class: "val" });
+  });
+}
+function renderTop() {
+  const max = DATA.top_numbers[0].high_risk_calls;
+  $("tb-top").innerHTML = `<table><thead><tr><th>เบอร์</th><th>รูปแบบหลัก</th><th class="r">สายเสี่ยงสูง</th><th></th><th class="r">ถูกแจ้ง</th><th class="r">คะแนน</th><th class="r">ใช้งาน (วัน)</th></tr></thead><tbody>${DATA.top_numbers.map(t => `<tr><td class="mono">${t.phone_masked}</td><td>${t.main_category.includes("เสียงสังเคราะห์") ? `<span class="pill vc">${t.main_category}</span>` : t.main_category}</td><td class="r num">${fmt(t.high_risk_calls)}</td><td style="width:90px;min-width:60px"><div class="minibar" style="width:${t.high_risk_calls / max * 100}%"></div></td><td class="r num">${t.report_count}</td><td class="r num">${t.risk_score}</td><td class="r num">${t.active_days}</td></tr>`).join("")}</tbody></table>`;
+}
+function storyCh4() {
+  const S = DATA.summary, ten = DATA.pareto.find(p => p.pct_numbers >= 10);
+  const pre = DATA.prefix, tot = pre.reduce((a, r) => a + r.high_risk_calls, 0), sp = pre.find(p => p.prefix.startsWith("02"));
+  const avgDays = DATA.top_numbers.reduce((a, t) => a + t.active_days, 0) / DATA.top_numbers.length;
+  const vc = DATA.top_numbers.filter(t => t.main_category.includes("เสียงสังเคราะห์")).length;
+  $("t4a").textContent = `ตลอด 6 เดือน มีเบอร์ที่ก่อสายเสี่ยงสูง ${fmt(S.unique_scam_numbers)} เบอร์ แต่ไม่ได้ก่อเหตุเท่ากัน เบอร์ ${fmt(ten.rank)} เบอร์แรก (10%) ก่อสายไปแล้ว ${fmt1(ten.cum_pct_calls)}%`;
+  $("t4b").textContent = `ข่าวดีคือเป้าหมายมีขนาดเล็ก ถ้าปิดกลุ่มหัวแถวได้เร็ว จะลดสายอันตรายได้ราวครึ่งหนึ่ง`;
+  $("t4c").textContent = `เบอร์ใน 10 อันดับแรกใช้งานเฉลี่ยเพียง ${fmt1(avgDays)} วันแล้วทิ้ง และ ${vc} ใน 10 เบอร์ใช้เสียงโคลน อีก ${fmt1(sp.high_risk_calls / tot * 100)}% ของสายเสี่ยงสูงมาจากเบอร์ขึ้นต้น 02 ที่ปลอมเป็นสำนักงานธนาคารหรือสถานีตำรวจ`;
+}
+
+/* ---------- 5. lag line + partner stacked ---------- */
+function renderLag() {
+  const el = $("c-lag"), W = Math.max(260, el.clientWidth), H = 240, m = { l: 34, r: 14, t: 18, b: 26 };
+  const rows = DATA.monthly, svg = svgFor(el, W, H), ymax = niceMax(Math.max(...rows.map(r => r.p75_hours_to_blacklist)));
+  const x = i => m.l + (W - m.l - m.r) * i / (rows.length - 1), y = v => H - m.b - (H - m.t - m.b) * v / ymax;
+  for (let i = 0; i <= 4; i++) { const v = ymax * i / 4; s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: i ? "gridl" : "base" }, svg); txt(svg, m.l - 6, y(v) + 4, fmt(v), { "text-anchor": "end" }); }
+  // p75 band as wash
+  const band = rows.map((r, i) => `${i ? "L" : "M"}${x(i)},${y(r.p75_hours_to_blacklist)}`).join("") + rows.slice().reverse().map((r, j) => `L${x(rows.length - 1 - j)},${y(0)}`).join("") + "Z";
+  s("path", { d: band, fill: "var(--safe)", "fill-opacity": .1 }, svg);
+  s("path", { d: rows.map((r, i) => `${i ? "L" : "M"}${x(i)},${y(r.median_hours_to_blacklist)}`).join(""), fill: "none", stroke: "var(--safe)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+  rows.forEach((r, i) => {
+    txt(svg, x(i), H - m.b + 16, mLabel(r.month), { "text-anchor": "middle" });
+    const last = i === rows.length - 1, first = i === 0;
+    s("circle", { cx: x(i), cy: y(r.median_hours_to_blacklist), r: last || first ? 5 : 3.5, fill: "var(--safe)", stroke: "var(--surface)", "stroke-width": 2 }, svg);
+    if (first || last) txt(svg, x(i) + (last ? 0 : 8), y(r.median_hours_to_blacklist) - 12, `${fmt1(r.median_hours_to_blacklist)} ชม.`, { class: "val", "text-anchor": last ? "end" : "start" });
+    const hit = s("rect", { x: x(i) - (W - m.l - m.r) / rows.length / 2, y: m.t, width: (W - m.l - m.r) / rows.length, height: H - m.t - m.b, class: "hit" }, svg);
+    hit.addEventListener("pointermove", ev => showTip(`<b>เบอร์ที่เห็นครั้งแรกใน ${mLabel(r.month)}</b>${row("var(--safe)", "มัธยฐาน", fmt1(r.median_hours_to_blacklist) + " ชม.")}${row("", "75% ปิดได้ภายใน", fmt1(r.p75_hours_to_blacklist) + " ชม.")}${row("", "เบอร์ใหม่", fmt(r.new_scam_numbers))}`, ev));
+    hit.addEventListener("pointerleave", hideTip);
+  });
+}
+function renderPartner() {
+  const el = $("c-partner"), W = Math.max(260, el.clientWidth), H = 226, m = { l: 34, r: 8, t: 14, b: 26 };
+  const rows = DATA.partners, keys = [["bank", "var(--bank)", "ธนาคาร"], ["telco", "var(--telco)", "Telco"], ["gov", "var(--gov)", "หน่วยงานรัฐ"], ["anonymous", "var(--anon)", "ไม่ระบุ"]];
+  const tot = r => keys.reduce((a, [k]) => a + r[k], 0), ymax = niceMax(Math.max(...rows.map(tot)));
+  const svg = svgFor(el, W, H), bw = Math.min(24, (W - m.l - m.r) / rows.length * 0.55);
+  const x = i => m.l + (W - m.l - m.r) * (i + 0.5) / rows.length, y = v => H - m.b - (H - m.t - m.b) * v / ymax;
+  for (let i = 0; i <= 4; i++) { const v = ymax * i / 4; s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: i ? "gridl" : "base" }, svg); txt(svg, m.l - 6, y(v) + 4, fmt(v), { "text-anchor": "end" }); }
+  rows.forEach((r, i) => {
+    let acc = 0; const x0 = x(i) - bw / 2;
+    keys.forEach(([k, c], j) => {
+      const y1 = y(acc), y0 = y(acc + r[k]); acc += r[k];
+      const top = j === keys.length - 1, h = Math.max(0, y1 - y0 - 2);
+      if (top) { const rr = Math.min(4, h); s("path", { d: `M${x0},${y1 - 2}V${y1 - 2 - h + rr}Q${x0},${y1 - 2 - h} ${x0 + rr},${y1 - 2 - h}H${x0 + bw - rr}Q${x0 + bw},${y1 - 2 - h} ${x0 + bw},${y1 - 2 - h + rr}V${y1 - 2}Z`, fill: c }, svg); }
+      else s("rect", { x: x0, y: y0, width: bw, height: Math.max(0, y1 - y0 - (j ? 2 : 0)), fill: c }, svg);
+    });
+    txt(svg, x(i), y(tot(r)) - 6, fmt(tot(r)), { class: "val", "text-anchor": "middle" });
+    txt(svg, x(i), H - m.b + 16, mLabel(r.month), { "text-anchor": "middle" });
+    const hit = s("rect", { x: x(i) - (W - m.l - m.r) / rows.length / 2, y: m.t, width: (W - m.l - m.r) / rows.length, height: H - m.t - m.b, class: "hit" }, svg);
+    hit.addEventListener("pointermove", ev => showTip(`<b>${mLabel(r.month)} 2026 · ${r.partner_accounts} บัญชีพันธมิตร</b>${keys.slice().reverse().map(([k, c, l]) => row(c, l, fmt(r[k]))).join("")}${row("", "รวม", fmt(tot(r)))}`, ev));
+    hit.addEventListener("pointerleave", hideTip);
+  });
+}
+function storyCh5() {
+  const M = DATA.monthly, a = M[0], b = M[M.length - 1], P = DATA.partners, pa = P[0], pb = P[P.length - 1];
+  $("t5a").textContent = `บัญชีพันธมิตรเพิ่มจาก ${pa.partner_accounts} เป็น ${pb.partner_accounts} บัญชี การแจ้งเบาะแสต่อเดือนเพิ่มจาก ${fmt(a.reports)} เป็น ${fmt(b.reports)} ครั้ง โดยธนาคารเป็นผู้แจ้งมากที่สุดในเดือนกันยายน (${fmt(pb.bank)} ครั้ง)`;
+  $("t5b").textContent = `เวลาตั้งแต่ระบบเห็นสายแรกของเบอร์ใหม่ จนมีคนแจ้งให้ขึ้น blacklist ลดจาก ${fmt1(a.median_hours_to_blacklist)} ชั่วโมง เหลือ ${fmt1(b.median_hours_to_blacklist)} ชั่วโมง เร็วขึ้น ${fmt1(a.median_hours_to_blacklist / b.median_hours_to_blacklist)} เท่า`;
+}
+
+/* ---------- 6. impact ---------- */
+function renderImpact() {
+  const conv = Number($("conv").value) / 100, avg = DATA.summary.avg_loss_thb;
+  const r = rangeDays(), hi = sum(r, "high_risk"), val = hi * conv * avg;
+  $("conv-v").textContent = (conv * 100).toFixed(1) + "%";
+  $("imp-range").textContent = `ช่วง ${rangeLabel()}`;
+  $("imp-big").textContent = `฿${fmt1(val / 1e6)} ล้าน`;
+  $("imp-sub").textContent = `เทียบเท่าป้องกันเหยื่อได้ราว ${fmt(hi * conv)} คน จากสายเสี่ยงสูงที่เตือนทัน ${fmt(hi)} สาย`;
+  $("imp-formula").innerHTML = `${fmt(hi)} สายเสี่ยงสูง<br>× ${(conv * 100).toFixed(1)}% (สมมติฐาน)<br>× ฿${fmt(avg)} ต่อเหยื่อ (GASA)<br>= ฿${fmt(val)}`;
+  // monthly bars
+  const el = $("c-impact"), W = Math.max(260, el.clientWidth), H = 240, m = { l: 34, r: 8, t: 22, b: 26 };
+  const rows = DATA.monthly.map(mm => ({ month: mm.month, v: mm.high_risk * conv * avg / 1e6 }));
+  const ymax = niceMax(Math.max(...rows.map(r => r.v)) * 1.05), svg = svgFor(el, W, H), bw = Math.min(24, (W - m.l - m.r) / rows.length * 0.55);
+  const x = i => m.l + (W - m.l - m.r) * (i + 0.5) / rows.length, y = v => H - m.b - (H - m.t - m.b) * v / ymax;
+  for (let i = 0; i <= 4; i++) { const v = ymax * i / 4; s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: i ? "gridl" : "base" }, svg); txt(svg, m.l - 6, y(v) + 4, fmt1(v), { "text-anchor": "end" }); }
+  const inRange = new Set(r.map(d => d.date.slice(0, 7)));
+  rows.forEach((rw, i) => {
+    const x0 = x(i) - bw / 2, y0 = y(rw.v), h = H - m.b - y0, rr = Math.min(4, h);
+    s("path", { d: `M${x0},${H - m.b}V${y0 + rr}Q${x0},${y0} ${x0 + rr},${y0}H${x0 + bw - rr}Q${x0 + bw},${y0} ${x0 + bw},${y0 + rr}V${H - m.b}Z`, fill: "var(--safe)", opacity: inRange.has(rw.month) ? 1 : .35 }, svg);
+    txt(svg, x(i), y0 - 6, fmt1(rw.v), { class: "val", "text-anchor": "middle" });
+    txt(svg, x(i), H - m.b + 16, mLabel(rw.month), { "text-anchor": "middle" });
+  });
+}
+
+/* ---------- footer counts ---------- */
+function renderFoot() {
+  const S = DATA.summary;
+  $("f-calls").textContent = fmt(S.total_checks); $("f-bl").textContent = fmt(S.blacklist_numbers); $("f-rep").textContent = fmt(S.reports); $("f-users").textContent = S.partners;
+}
+
+/* ---------- boot ---------- */
+let slope;
+function renderAll() {
+  renderKpis(); renderDaily(); renderSyn(); slope = renderSlope(); renderHeat(); renderPareto(); renderPrefix(); renderLag(); renderPartner(); renderImpact();
+}
+function boot() {
+  renderMonthlyTable(); renderTop(); renderFoot(); renderAll();
+  storyCh1(); storyCh2(slope); storyCh3(); storyCh4(); storyCh5();
+  document.querySelectorAll("#range button").forEach(b => b.addEventListener("click", () => {
+    RANGE = b.dataset.range;
+    document.querySelectorAll("#range button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    renderKpis(); renderDaily(); renderImpact();
+  }));
+  $("conv").addEventListener("input", renderImpact);
+  let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(renderAll, 120); });
+  addEventListener("scroll", hideTip, { passive: true });
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+</script>
